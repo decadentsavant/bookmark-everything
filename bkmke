@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# CLI wrapper for the bookmarkEverything plugin (io.github.decadentsavant.bookmark-everything).
+#
+#   bkmke                       toggle the launcher (configured mode)
+#   bkmke hints | search        open directly in that mode
+#   bkmke add [target]          open the Add dialog (URL, or a path; "." works)
+#   bkmke clip                  add from clipboard
+#   bkmke apps                  pick installed applications to add (multi-select)
+#   bkmke import <file.json>    merge a JSON export (backs up first)
+#   bkmke export [file.json]    write all bookmarks to a JSON file
+#   bkmke path                  print the storage file path
+set -euo pipefail
+
+PLUGIN_ID="io.github.decadentsavant.bookmark-everything"
+STORE="${HOME}/.config/omarchy/bookmark-everything.json"
+
+call() { omarchy-shell shell call "$PLUGIN_ID" "$@"; }
+
+case "${1:-toggle}" in
+  toggle) omarchy-shell shell toggle "$PLUGIN_ID" '{}' ;;
+  hints|search) omarchy-shell shell summon "$PLUGIN_ID" "{\"mode\":\"$1\"}" ;;
+  add)
+    # A relative path that exists (".", "docs/notes.md") is resolved to an
+    # absolute one so it survives leaving this directory.
+    t="${2:-}"
+    if [[ -n $t && -e $t ]]; then t="$(realpath -- "$t")"; fi
+    call addBookmark "$t" ;;
+  clip|clipboard) call addFromClipboard "" ;;
+  apps|applications) call pickApplications "" ;;
+  import)
+    [[ -n "${2:-}" ]] || { echo "usage: bkmke import <file.json>" >&2; exit 2; }
+    call importFrom "$(realpath -m "$2")" ;;
+  export)
+    out="${2:-$HOME/bookmark-everything-export-$(date +%Y%m%d-%H%M%S).json}"
+    call exportTo "$(realpath -m "$out")" ;;
+  path) echo "$STORE" ;;
+  -h|--help|help) sed -n '2,13p' "$0" ;;
+  *) echo "unknown command: $1" >&2; exit 2 ;;
+esac

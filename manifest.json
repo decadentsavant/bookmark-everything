@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "io.github.decadentsavant.bookmark-everything",
+  "name": "bookmarkEverything",
+  "version": "1.0.0",
+  "author": "decadentsavant",
+  "license": "MIT",
+  "description": "Keyboard-first launcher for bookmarked URLs, files, folders, and applications",
+  "kinds": [
+    "overlay"
+  ],
+  "keepLoaded": true,
+  "entryPoints": {
+    "overlay": "BookmarkEverything.qml"
+  }
+}

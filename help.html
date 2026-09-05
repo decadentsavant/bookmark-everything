@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>bookmarkEverything — Help</title>
+<style>
+  :root { color-scheme: light dark; --fg: #1f2328; --bg: #ffffff; --muted: #656d76; --line: #d0d7de; --accent: #0969da; --code: #f6f8fa; }
+  @media (prefers-color-scheme: dark) { :root { --fg: #e6edf3; --bg: #0d1117; --muted: #8b949e; --line: #30363d; --accent: #58a6ff; --code: #161b22; } }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 40px 24px 80px; }
+  h1 { font-size: 30px; margin: 0 0 4px; }
+  h2 { font-size: 20px; margin: 36px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+  p.lead { color: var(--muted); margin-top: 0; }
+  kbd { display: inline-block; padding: 1px 7px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 6px; background: var(--code); font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; }
+  code, pre { font: 13.5px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--code); border-radius: 6px; }
+  code { padding: 1px 5px; }
+  pre { padding: 12px 14px; overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0 4px; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
+  td:first-child { white-space: nowrap; }
+  a { color: var(--accent); }
+  .tip { border-left: 3px solid var(--accent); padding: 6px 14px; margin: 14px 0; background: var(--code); border-radius: 0 6px 6px 0; }
+</style>
+</head>
+<body>
+<main>
+<h1>bookmarkEverything</h1>
+<p class="lead">A keyboard-first launcher for bookmarked URLs, files, folders, and applications. Local only. No accounts, no network.</p>
+
+<h2>Open the launcher</h2>
+<table>
+<tr><th>Key</th><th>What it does</th></tr>
+<tr><td><kbd>Super</kbd> + <kbd>B</kbd></td><td>Toggle the launcher in the configured mode (Hints by default).</td></tr>
+<tr><td><code>bkmke</code></td><td>The same from a terminal. Try <code>bkmke help</code> for the other subcommands.</td></tr>
+</table>
+
+<h2>Hint mode</h2>
+<p>Every bookmark has a stable two-letter code shown in the left column. Type the two letters and the bookmark opens immediately. Typing the first letter narrows the list to matching codes.</p>
+<table>
+<tr><th>Key</th><th>Action</th></tr>
+<tr><td><kbd>a</kbd>…<kbd>z</kbd> ×2</td><td>Launch the bookmark with that hint code</td></tr>
+<tr><td><kbd>zz</kbd> or <kbd>?</kbd></td><td>Open this help page (zz is reserved for it)</td></tr>
+<tr><td><kbd>/</kbd> or <kbd>Tab</kbd></td><td>Switch to Search mode</td></tr>
+<tr><td><kbd>↑</kbd> <kbd>↓</kbd> then <kbd>Enter</kbd></td><td>Move the highlight and launch it</td></tr>
+<tr><td><kbd>+</kbd> or <kbd>Ctrl</kbd>+<kbd>N</kbd></td><td>Add a bookmark</td></tr>
+<tr><td><kbd>Ctrl</kbd>+<kbd>V</kbd></td><td>Add whatever URL or path is on the clipboard</td></tr>
+<tr><td><kbd>Ctrl</kbd>+<kbd>A</kbd></td><td>Add installed applications in bulk (see below)</td></tr>
+<tr><td><kbd>Ctrl</kbd>+<kbd>E</kbd></td><td>Edit the highlighted bookmark</td></tr>
+<tr><td><kbd>Delete</kbd> or <kbd>Ctrl</kbd>+<kbd>D</kbd></td><td>Delete the highlighted bookmark (asks first)</td></tr>
+<tr><td><kbd>Ctrl</kbd>+<kbd>I</kbd> / <kbd>Ctrl</kbd>+<kbd>O</kbd></td><td>Import from / export to a JSON file</td></tr>
+<tr><td><kbd>Esc</kbd></td><td>Clear a half-typed code, then close</td></tr>
+</table>
+
+<h2>Search mode</h2>
+<p>Type to filter. Matching is fuzzy and runs over the name, tags, notes, URL or path, and the application name. All the shortcuts above still work here, except that letters go into the search box.</p>
+<table>
+<tr><th>Key</th><th>Action</th></tr>
+<tr><td><kbd>↑</kbd> <kbd>↓</kbd> then <kbd>Enter</kbd></td><td>Choose and launch</td></tr>
+<tr><td><kbd>Ctrl</kbd>+<kbd>Backspace</kbd> / <kbd>Ctrl</kbd>+<kbd>U</kbd></td><td>Delete the last word / clear the search</td></tr>
+<tr><td><kbd>Esc</kbd></td><td>Clear the search, then go back to Hints (or close, if the launcher opened in Search mode)</td></tr>
+</table>
+
+<h2>Mouse</h2>
+<ul>
+<li>Click a row to launch it. Right-click, or click the <strong>⋯</strong> on the highlighted row, for Open / Edit / Delete.</li>
+<li>The <strong>+</strong> in the header adds a bookmark. The <strong>HINTS</strong> / <strong>SEARCH</strong> badge switches mode.</li>
+<li>Click outside the card to close.</li>
+</ul>
+
+<h2>Adding and editing</h2>
+<p>The Add dialog has Type (URL, File or folder, Application), Name, Target, Tags, Notes, and Hint fields. <kbd>Tab</kbd> moves between fields, <kbd>Enter</kbd> saves, <kbd>Esc</kbd> cancels.</p>
+<ul>
+<li>Pasting a URL into Target selects <em>URL</em> automatically; typing a path selects <em>File or folder</em>. Whether it is saved as a file or a folder is decided when you save, from what is actually on disk.</li>
+<li>For <em>File or folder</em>, the Target field works like a shell: press <kbd>Tab</kbd> in the empty field to start browsing from your home folder, then <kbd>Tab</kbd> extends to the common prefix and cycles through matches; <kbd>↑</kbd> <kbd>↓</kbd> browse the list and <kbd>Enter</kbd> accepts (a folder keeps descending). <kbd>Ctrl</kbd>+<kbd>Space</kbd>, or the <strong>Places</strong> button, opens a picker of folders and files you already use: your Files sidebar bookmarks, zoxide's most-visited folders, and recent files. Nothing extra to install; sources you don't have are skipped.</li>
+<li>For <em>Application</em>, the Target field becomes a picker: press <kbd>Enter</kbd> or start typing to search installed applications.</li>
+<li>Name is optional. It defaults to the site host, the file name, or the application name.</li>
+<li>Hint is auto-assigned to the next free code. If you type a code another bookmark already uses, the form says <em>Swaps with …</em> and, on save, the two bookmarks trade codes: the other one takes the code this entry had (or would have been given). The <strong>󰑐</strong> button next to the field, or <kbd>Ctrl</kbd>+<kbd>R</kbd>, restores the default code.</li>
+<li>Saving checks that the target exists (paths), looks like a URL, or matches an installed application.</li>
+</ul>
+
+<h2>Adding many applications at once</h2>
+<p>Press <kbd>Ctrl</kbd>+<kbd>A</kbd> in the launcher (or run <code>bkmke apps</code>) to open the application picker in bulk mode. The same picker appears from the Add dialog when the type is <em>Application</em>.</p>
+<table>
+<tr><th>Key</th><th>Action</th></tr>
+<tr><td><kbd>Space</kbd> or click</td><td>Select or deselect the highlighted application</td></tr>
+<tr><td><kbd>Ctrl</kbd>+<kbd>A</kbd></td><td>Select every application currently listed. Type a filter first to narrow the list, or leave it empty to select all installed applications.</td></tr>
+<tr><td><kbd>Enter</kbd></td><td>Add every selected application as its own bookmark (name, icon, and notes come from the desktop entry, tagged <code>app</code>). Applications already bookmarked are skipped.</td></tr>
+<tr><td><kbd>Esc</kbd></td><td>Clear the selection, then the filter, then leave the picker</td></tr>
+</table>
+
+<h2>Bookmark types</h2>
+<table>
+<tr><th>Type</th><th>Target</th><th>Opens with</th></tr>
+<tr><td>URL</td><td><code>https://…</code> (bare domains get <code>https://</code>)</td><td>Default browser via <code>xdg-open</code></td></tr>
+<tr><td>File</td><td>Absolute path, <code>~/</code> allowed</td><td>Default application via <code>xdg-open</code></td></tr>
+<tr><td>Folder</td><td>Absolute path, <code>~/</code> allowed</td><td>File manager via <code>xdg-open</code></td></tr>
+<tr><td>Application</td><td>Desktop entry id, e.g. <code>firefox</code></td><td>Launched the same way as the Omarchy app menu</td></tr>
+</table>
+
+<h2>Missing targets</h2>
+<p>A bookmark whose application is not installed, or whose file or folder no longer exists, is shown struck through with a <em>not installed</em> / <em>file missing</em> / <em>folder missing</em> note. Launching it sends a notification instead of failing silently. The check runs every time the launcher opens, so reinstalling the app or restoring the file clears the flag. Imports also report any applications they could not match.</p>
+
+<h2>Where things live</h2>
+<pre>~/.config/omarchy/bookmark-everything.json              your bookmarks (plain JSON, edit freely)
+~/.config/omarchy/bookmark-everything.json.bak-&lt;time&gt;  automatic backup taken before each import
+~/.config/omarchy/plugins/io.github.decadentsavant.bookmark-everything/      the plugin itself (this page included)
+~/.config/omarchy/shell.json                  plugin settings, see below
+~/.config/hypr/bindings.lua                   the Super+B binding</pre>
+<p>An entry looks like this. The file reloads automatically when you edit it by hand; missing hints or ids are filled in.</p>
+<pre>{
+  "id": "pacman-cheatsheet",
+  "hint": "aa",
+  "type": "file",
+  "name": "Pacman &amp; Yay Cheatsheet",
+  "target": "~/Documents/pacman-yay-cheatsheet.html",
+  "tags": ["linux", "arch", "reference"],
+  "notes": "Common package commands"
+}</pre>
+
+<h2>Settings</h2>
+<p>Open mode is set on the plugin's entry in <code>~/.config/omarchy/shell.json</code>:</p>
+<pre>"plugins": [
+  { "id": "io.github.decadentsavant.bookmark-everything", "openMode": "search" }
+]</pre>
+<p>The hotkey lives in <code>~/.config/hypr/bindings.lua</code>. To open straight into Search from a second key, pass a mode in the payload:</p>
+<pre>o.bind("SUPER + B", "Bookmarks", "omarchy-shell shell toggle io.github.decadentsavant.bookmark-everything")
+o.bind("SUPER + SHIFT + B", "Bookmark search", "omarchy-shell shell summon io.github.decadentsavant.bookmark-everything '{\"mode\":\"search\"}'")</pre>
+
+<h2>Import and export</h2>
+<p>Both use the same JSON format as the storage file. Import merges: an entry with the same id replaces the old one, new ids are appended, and any imported hint that collides with an existing one is reassigned so your codes stay stable. A backup is written before the merge.</p>
+<pre>bookmarks export                 # ~/bookmark-everything-export-&lt;date&gt;.json
+bkmke export ~/my.json
+bkmke import ~/my.json
+bkmke add https://example.com
+bkmke add .                  # bookmark the current folder
+bkmke add docs/notes.md      # relative paths are resolved
+bkmke clip                   # add from clipboard
+bkmke apps                   # pick installed applications, multi-select
+bkmke search                 # open in Search mode</pre>
+<div class="tip">There are 675 usable hint codes (aa–zy). Bookmarks beyond that are still reachable in Search mode.</div>
+</main>
+</body>
+</html>
