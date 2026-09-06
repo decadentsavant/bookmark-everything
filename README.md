@@ -48,8 +48,8 @@ o.bind("SUPER + B", "Bookmarks", "omarchy-shell shell toggle io.github.decadents
 Hyprland reloads the file on save. Press Super+B and you are in.
 
 The first launch seeds a few starter bookmarks so you can see each type in
-action: your home and Downloads folders, this project on GitHub, the author on
-X, and one installed application. Each comes tagged so it stays useful if you
+action: your home and Downloads folders, this project and Baton on GitHub, the
+author on X, and one installed application. Each comes tagged so it stays useful if you
 keep it. Edit or delete them as you like. The `zz` entry is the built-in help
 and is always there.
 

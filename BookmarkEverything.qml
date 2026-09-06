@@ -316,6 +316,7 @@ Item {
       { type: "folder", name: "Home folder", target: "~/", tags: ["home", "folder"], notes: "Your home folder. Edit or delete these starter bookmarks freely." },
       { type: "folder", name: "Downloads folder", target: "~/Downloads", tags: ["downloads", "folder"], notes: "" },
       { type: "url", name: "Bookmark Everything on GitHub", target: "https://github.com/decadentsavant/bookmark-everything", tags: ["docs", "github"], notes: "Source, issues, and updates for this plugin" },
+      { type: "url", name: "Baton on GitHub", target: "https://github.com/decadentsavant/baton", tags: ["plugin", "github"], notes: "Wave at a random Omarchy user. Another plugin by the same author." },
       { type: "url", name: "decadentsavant on X", target: "https://x.com/decadentsavant", tags: ["author", "social"], notes: "The plugin's author" }
     ]
     for (var i = 0; i < root.seedApps.length; i++) {
