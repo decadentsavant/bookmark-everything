@@ -301,9 +301,9 @@ Item {
   // preference list that is installed. Never runs when a file exists.
   property bool seedPending: false
   readonly property var seedApps: [
-    { target: "obsidian", name: "Obsidian" },
-    { target: "localsend", name: "LocalSend" },
-    { target: "org.gnome.Nautilus", name: "Files" }
+    { target: "obsidian", name: "Obsidian", tag: "notes" },
+    { target: "localsend", name: "LocalSend", tag: "share" },
+    { target: "org.gnome.Nautilus", name: "Files", tag: "files" }
   ]
 
   function appsIndexReady() {
@@ -313,15 +313,15 @@ Item {
   function seedDefaults() {
     root.seedPending = false
     var list = [
-      { type: "folder", name: "Home folder", target: "~/", tags: ["sample"], notes: "Your home folder. Edit or delete these samples freely." },
-      { type: "folder", name: "Downloads folder", target: "~/Downloads", tags: ["sample"], notes: "" },
-      { type: "url", name: "Bookmark Everything on GitHub", target: "https://github.com/decadentsavant/bookmark-everything", tags: ["sample", "docs"], notes: "Source, issues, and updates for this plugin" },
-      { type: "url", name: "decadentsavant on X", target: "https://x.com/decadentsavant", tags: ["sample"], notes: "The plugin's author" }
+      { type: "folder", name: "Home folder", target: "~/", tags: ["home", "folder"], notes: "Your home folder. Edit or delete these starter bookmarks freely." },
+      { type: "folder", name: "Downloads folder", target: "~/Downloads", tags: ["downloads", "folder"], notes: "" },
+      { type: "url", name: "Bookmark Everything on GitHub", target: "https://github.com/decadentsavant/bookmark-everything", tags: ["docs", "github"], notes: "Source, issues, and updates for this plugin" },
+      { type: "url", name: "decadentsavant on X", target: "https://x.com/decadentsavant", tags: ["author", "social"], notes: "The plugin's author" }
     ]
     for (var i = 0; i < root.seedApps.length; i++) {
       var de = root.lookupApp(root.seedApps[i].target)
       if (de) {
-        list.push({ type: "app", name: String(de.name || root.seedApps[i].name), target: String(de.id || root.seedApps[i].target), tags: ["sample", "app"], notes: String(de.comment || "") })
+        list.push({ type: "app", name: String(de.name || root.seedApps[i].name), target: String(de.id || root.seedApps[i].target), tags: ["app", root.seedApps[i].tag], notes: String(de.comment || "") })
         break
       }
     }
