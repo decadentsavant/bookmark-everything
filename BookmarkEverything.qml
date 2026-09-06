@@ -1399,6 +1399,12 @@ Item {
     if (ctrl && event.key === Qt.Key_D) { root.requestDelete(root.selectedEntry()); return true }
     if (ctrl && event.key === Qt.Key_A) { root.pickApplications(); return true }
     if (event.key === Qt.Key_Delete) { root.requestDelete(root.selectedEntry()); return true }
+    // Backspace deletes too (Mac keyboards have no Delete key), but only when
+    // there is no typed hint or search text for it to erase first.
+    if (event.key === Qt.Key_Backspace && !(root.mode === "hints" ? root.hintBuffer : root.filterText)) {
+      root.requestDelete(root.selectedEntry())
+      return true
+    }
     if (event.key === Qt.Key_F1) { root.openHelp(); return true }
 
     if (event.key === Qt.Key_Escape) {

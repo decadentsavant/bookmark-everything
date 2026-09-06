@@ -96,7 +96,7 @@ To reach the launcher from the Omarchy menu as well, add these rows to
 | Ctrl+V | Add the URL or path on the clipboard |
 | Ctrl+A | Add installed applications in bulk |
 | Ctrl+E | Edit the highlighted bookmark |
-| Delete or Ctrl+D | Delete the highlighted bookmark, with confirmation |
+| Delete, Backspace, or Ctrl+D | Delete the highlighted bookmark, with confirmation |
 | Ctrl+I / Ctrl+O | Import / export |
 | `zz` or `?` | Open the built-in help |
 | Esc | Clear a half-typed code, then close |
