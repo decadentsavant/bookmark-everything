@@ -45,7 +45,7 @@ Item {
   Component.onDestruction: Local.HotkeyService.release()
 
   property bool opened: false
-  property string view: "list"        // list | form | apps | prompt | hotkey
+  property string view: "list"        // list | form | apps | prompt | options
   property string mode: "hints"       // hints | search
   property string openMode: "hints"   // mode the launcher opened in (Esc target)
   property string hintBuffer: ""
@@ -103,30 +103,32 @@ Item {
   property string promptKind: "import"
   property bool importPending: false
 
-  // ---------------------------------------------------------- hotkey view
+  // --------------------------------------------------------- options view
   property string hotkeyInput: ""
-  property int hotkeyIndex: -1
-  readonly property int hotkeyRowHeight: Style.space(30)
+  readonly property int listFooterHeight: Style.space(26)
   // What the typed combination means right now, against the live bind list.
   readonly property var hotkeyCheck: {
     var binds = Local.HotkeyService.binds
     var p = HK.parseCombo(root.hotkeyInput)
     if (p.error) return { ok: false, message: p.error, combo: "" }
     var st = HK.status(binds, p.combo)
-    if (st.state === "taken") return { ok: false, message: HK.pretty(p.combo) + " is already used for “" + st.owner + "”. Pick another, or free it in ~/.config/hypr/bindings.lua.", combo: p.combo }
-    if (p.combo === Local.HotkeyService.active) return { ok: true, message: HK.pretty(p.combo) + " is the current hotkey.", combo: p.combo }
+    if (st.state === "taken") return { ok: false, message: HK.pretty(p.combo) + " is already used for “" + st.owner + "”. Choose another, or free it in ~/.config/hypr/bindings.lua.", combo: p.combo }
+    if (p.combo === Local.HotkeyService.active) return { ok: true, message: "This is the current hotkey.", combo: p.combo }
     return { ok: true, message: HK.pretty(p.combo) + " is free. Enter to use it.", combo: p.combo }
   }
-  readonly property var hotkeySuggestions: {
-    var binds = Local.HotkeyService.binds
-    var list = HK.CANDIDATES.slice()
-    var cur = Local.HotkeyService.hotkey
-    if (cur && list.indexOf(cur) === -1) list.unshift(cur)
-    return list.map(function(c) {
-      var st = HK.status(binds, c)
-      var label = st.state === "taken" ? "Used for " + st.owner : (c === Local.HotkeyService.active ? "Current" : "Free")
-      return { combo: c, pretty: HK.pretty(c), state: st.state, label: label }
-    })
+  // The line to paste into bindings.lua when the built-in hotkey is off.
+  readonly property string bindingSnippet: HK.luaBindUser(Local.HotkeyService.hotkey || HK.DEFAULT_HOTKEY, root.pluginId)
+  // Whether the bar icon is in the bar layout right now.
+  readonly property bool iconInBar: {
+    var cfg = root.shell ? root.shell.shellConfig : null
+    var layout = cfg && cfg.bar && cfg.bar.layout ? cfg.bar.layout : null
+    if (!layout) return false
+    var sections = ["left", "center", "right"]
+    for (var s = 0; s < sections.length; s++) {
+      var arr = layout[sections[s]] || []
+      for (var i = 0; i < arr.length; i++) if (arr[i] && arr[i].id === root.pluginId) return true
+    }
+    return false
   }
 
   // Shares the [menu] surface tokens so themes that style the Omarchy menu
@@ -160,8 +162,8 @@ Item {
     if (root.view === "apps") return Math.max(4, Math.min(appsModel.count, 10)) * (root.rowHeight + root.rowSpacing) + Style.space(22)
     if (root.view === "places") return Math.max(4, Math.min(placesModel.count, 10)) * (root.rowHeight + root.rowSpacing) + Style.space(22)
     if (root.view === "prompt") return Style.spacing.controlHeight + Style.space(30)
-    if (root.view === "hotkey") return Style.spacing.controlHeight * 2 + Style.space(40) + root.hotkeySuggestions.length * (root.hotkeyRowHeight + Style.spacing.xs) + Style.spacing.md * 4 + Style.space(8)
-    return root.listRows * (root.rowHeight + root.rowSpacing)
+    if (root.view === "options") return optionsColumn.implicitHeight + Style.space(8)
+    return root.listRows * (root.rowHeight + root.rowSpacing) + root.listFooterHeight
   }
   property int cardHeight: Math.min(contentMargin * 2 + headerHeight + contentSpacing + bodyHeight, panel.height - Style.gapsOut * 2)
 
@@ -190,7 +192,7 @@ Item {
     if (root.seedPending) root.seedDefaults()   // index still empty: seed without the app sample
     root.rebuildDisplay()
     if (payload.add !== undefined) root.openAdd(String(payload.add || ""))
-    else if (payload.hotkey) root.openHotkey()
+    else if (payload.options || payload.hotkey) root.openOptions()
     Qt.callLater(function() { keyCatcher.forceActiveFocus() })
   }
 
@@ -265,7 +267,37 @@ Item {
   // IPC: omarchy-shell shell call <id> openHotkeySettings ''
   function openHotkeySettings() {
     root.ensureOpen()
-    root.openHotkey()
+    root.openOptions()
+    return "ok"
+  }
+
+  // IPC: omarchy-shell shell call <id> setIconInBar false
+  // Adds or removes the bar icon. The plugin stays enabled either way through
+  // an entry in shell.json's `plugins` list, so the hotkey keeps working.
+  function setIconInBar(value) {
+    var show = String(value) !== "false"
+    if (!root.shell || typeof root.shell.persistShellConfig !== "function") return "error: shell config unavailable"
+    var cfg = JSON.parse(JSON.stringify(root.shell.shellConfig || {}))
+    if (!cfg.bar || typeof cfg.bar !== "object") cfg.bar = {}
+    if (!cfg.bar.layout || typeof cfg.bar.layout !== "object") cfg.bar.layout = { left: [], center: [], right: [] }
+    if (!Array.isArray(cfg.plugins)) cfg.plugins = []
+    var sections = ["left", "center", "right"]
+    for (var s = 0; s < sections.length; s++) {
+      var arr = Array.isArray(cfg.bar.layout[sections[s]]) ? cfg.bar.layout[sections[s]] : []
+      cfg.bar.layout[sections[s]] = arr.filter(function(e) { return !(e && e.id === root.pluginId) })
+    }
+    var pluginIndex = -1
+    for (var i = 0; i < cfg.plugins.length; i++) if (cfg.plugins[i] && cfg.plugins[i].id === root.pluginId) pluginIndex = i
+    if (show) {
+      var right = cfg.bar.layout.right
+      right.splice(Math.min(1, right.length), 0, { id: root.pluginId })
+      // A bare plugins entry only existed to keep the overlay loaded while the
+      // icon was hidden; drop it so `omarchy plugin disable` works in one go.
+      if (pluginIndex !== -1 && Object.keys(cfg.plugins[pluginIndex]).length === 1) cfg.plugins.splice(pluginIndex, 1)
+    } else if (pluginIndex === -1) {
+      cfg.plugins.push({ id: root.pluginId })
+    }
+    root.shell.persistShellConfig(cfg)
     return "ok"
   }
 
@@ -1457,7 +1489,7 @@ Item {
     if (ctrl && event.key === Qt.Key_O) { root.openPrompt("export"); return true }
     if (ctrl && event.key === Qt.Key_D) { root.requestDelete(root.selectedEntry()); return true }
     if (ctrl && event.key === Qt.Key_A) { root.pickApplications(); return true }
-    if (ctrl && event.key === Qt.Key_K) { root.openHotkey(); return true }
+    if (ctrl && event.key === Qt.Key_K) { root.openOptions(); return true }
     if (event.key === Qt.Key_Delete) { root.requestDelete(root.selectedEntry()); return true }
     // Backspace deletes too (Mac keyboards have no Delete key), but only in
     // Hint mode with no half-typed code; in Search mode it edits the query.
@@ -1610,22 +1642,21 @@ Item {
     return false
   }
 
-  // --------------------------------------------------------------- hotkey
-  // Choosing a key is typed or picked from a list, never captured from a key
-  // press: Hyprland acts on a bound combination before the overlay could see
-  // it, so "press the keys you want" would launch whatever holds them.
+  // -------------------------------------------------------------- options
+  // The hotkey is typed, never captured from a key press: Hyprland acts on a
+  // bound combination before the overlay could see it, so "press the keys
+  // you want" would launch whatever holds them.
 
-  function openHotkey() {
+  function openOptions() {
     root.actionsOpen = false
     root.deleteConfirmOpen = false
-    root.view = "hotkey"
-    root.hotkeyIndex = -1
+    root.view = "options"
     hotkeyField.text = Local.HotkeyService.hotkey
     Local.HotkeyService.scan()
     Qt.callLater(function() { hotkeyField.forceActiveFocus(); hotkeyField.selectAll() })
   }
 
-  function closeHotkey() {
+  function closeOptions() {
     root.view = "list"
     Qt.callLater(function() { keyCatcher.forceActiveFocus() })
   }
@@ -1635,25 +1666,7 @@ Item {
     if (!check.ok) { root.showNotice(check.message); return }
     var err = Local.HotkeyService.setHotkey(check.combo)
     if (err) { root.showNotice(err); return }
-    root.closeHotkey()
-    root.showNotice("Hotkey: " + HK.pretty(check.combo))
-  }
-
-  function chooseHotkeySuggestion(index) {
-    var list = root.hotkeySuggestions
-    if (index < 0 || index >= list.length) return
-    root.hotkeyIndex = index
-    hotkeyField.text = list[index].combo
-    hotkeyField.cursorPosition = hotkeyField.text.length
-  }
-
-  function cycleHotkeySuggestion(delta) {
-    var list = root.hotkeySuggestions
-    if (!list.length) return
-    var i = root.hotkeyIndex
-    if (i < 0) for (var k = 0; k < list.length; k++) if (list[k].combo === root.hotkeyCheck.combo) { i = k; break }
-    i = i < 0 ? (delta > 0 ? 0 : list.length - 1) : (i + delta + list.length) % list.length
-    root.chooseHotkeySuggestion(i)
+    root.showNotice("Opens with " + HK.pretty(check.combo))
   }
 
   function toggleHotkeyEnabled() {
@@ -1661,11 +1674,16 @@ Item {
     root.showNotice(Local.HotkeyService.enabled ? "Built-in hotkey on" : "Built-in hotkey off")
   }
 
-  function handleHotkeyKey(event) {
-    if (event.key === Qt.Key_Escape) { root.closeHotkey(); return true }
+  function toggleIconInBar() {
+    var show = !root.iconInBar
+    var result = root.setIconInBar(show)
+    if (result !== "ok") { root.showNotice(result); return }
+    root.showNotice(show ? "Icon added to the bar" : "Icon removed from the bar")
+  }
+
+  function handleOptionsKey(event) {
+    if (event.key === Qt.Key_Escape) { root.closeOptions(); return true }
     if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) { root.applyHotkey(); return true }
-    if (event.key === Qt.Key_Up) { root.cycleHotkeySuggestion(-1); return true }
-    if (event.key === Qt.Key_Down) { root.cycleHotkeySuggestion(1); return true }
     return false
   }
 
@@ -1886,7 +1904,7 @@ Item {
           else if (root.view === "apps") handled = root.handleAppsKey(event)
           else if (root.view === "places") handled = root.handlePlacesKey(event)
           else if (root.view === "prompt") handled = root.handlePromptKey(event)
-          else if (root.view === "hotkey") handled = root.handleHotkeyKey(event)
+          else if (root.view === "options") handled = root.handleOptionsKey(event)
           else handled = root.handleListKey(event)
           if (handled) event.accepted = true
         }
@@ -1917,13 +1935,13 @@ Item {
                 if (root.view === "apps") return root.appsFilter || (root.appsBulkMode ? "Add applications…" : "Search applications…")
                 if (root.view === "places") return root.placesFilter || "Places you use…"
                 if (root.view === "prompt") return root.promptKind === "export" ? "Export bookmarks to file" : "Import bookmarks from file"
-                if (root.view === "hotkey") return "Key that opens the launcher"
+                if (root.view === "options") return "Options"
                 if (root.mode === "search") return root.filterText || "Search bookmarks…"
                 return root.hintBuffer ? root.hintBuffer + "_" : "/ to search"
               }
               color: (root.view === "list" && root.mode === "hints" && root.hintBuffer) ? root.selectedText : root.foreground
               opacity: {
-                if (root.view === "form" || root.view === "prompt" || root.view === "hotkey") return 1
+                if (root.view === "form" || root.view === "prompt" || root.view === "options") return 1
                 if (root.view === "apps") return root.appsFilter ? 1 : 0.58
                 if (root.view === "places") return root.placesFilter ? 1 : 0.58
                 if (root.mode === "search") return root.filterText ? 1 : 0.58
@@ -1960,36 +1978,6 @@ Item {
                 font.pixelSize: Style.font.caption
                 elide: Text.ElideRight
                 width: Math.min(implicitWidth, Style.space(260))
-              }
-
-              // Hotkey chip — the key that opens the launcher; click to change it.
-              BorderSurface {
-                visible: root.view === "list"
-                anchors.verticalCenter: parent.verticalCenter
-                width: hotkeyLabel.implicitWidth + Style.space(14)
-                height: Style.space(22)
-                radius: root.cornerRadius
-                color: hotkeyHover.containsMouse ? root.selectedBackground : "transparent"
-                borderSpec: Border.flat(Util.alpha(root.foreground, 0.32), Style.normalBorderWidth)
-
-                Text {
-                  id: hotkeyLabel
-                  textFormat: Text.PlainText
-                  anchors.centerIn: parent
-                  text: Local.HotkeyService.enabled ? (Local.HotkeyService.prettyActive || "No hotkey") : "Hotkey off"
-                  color: hotkeyHover.containsMouse ? root.selectedText : root.foreground
-                  opacity: hotkeyHover.containsMouse ? 1 : 0.62
-                  font.family: root.fontFamily
-                  font.pixelSize: Style.font.caption
-                }
-
-                MouseArea {
-                  id: hotkeyHover
-                  anchors.fill: parent
-                  hoverEnabled: true
-                  cursorShape: Qt.PointingHandCursor
-                  onClicked: root.openHotkey()
-                }
               }
 
               // Mode badge — click to switch between Hints and Search.
@@ -2081,10 +2069,47 @@ Item {
                 verticalAlignment: Text.AlignVCenter
               }
 
+              // Footer: a gear for the options screen.
+              Item {
+                id: listFooter
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
+                height: root.listFooterHeight
+
+                Rectangle {
+                  anchors.right: parent.right
+                  anchors.bottom: parent.bottom
+                  width: Style.space(26)
+                  height: Style.space(26)
+                  radius: root.cornerRadius
+                  color: gearHover.containsMouse ? root.selectedBackground : "transparent"
+
+                  Text {
+                    textFormat: Text.PlainText
+                    anchors.centerIn: parent
+                    text: "󰒓" // nf-md-cog, U+F0493
+                    color: gearHover.containsMouse ? root.selectedText : root.foreground
+                    opacity: gearHover.containsMouse ? 1 : 0.55
+                    font.family: root.fontFamily
+                    font.pixelSize: Style.font.body
+                  }
+
+                  MouseArea {
+                    id: gearHover
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: root.view === "options" ? root.closeOptions() : root.openOptions()
+                  }
+                }
+              }
+
               ListView {
                 id: resultList
                 anchors.fill: parent
                 anchors.topMargin: emptyHint.visible ? emptyHint.height : 0
+                anchors.bottomMargin: listFooter.height
                 model: displayModel
                 clip: true
                 spacing: root.rowSpacing
@@ -3091,29 +3116,75 @@ Item {
               }
             }
 
-            // ============================================== hotkey view
+            // ============================================== options view
             Item {
               anchors.fill: parent
-              visible: root.view === "hotkey"
+              visible: root.view === "options"
 
               Column {
+                id: optionsColumn
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.top: parent.top
                 spacing: Style.spacing.md
 
-                TextField {
-                  id: hotkeyField
+                // What opens the launcher right now.
+                Text {
+                  textFormat: Text.PlainText
                   width: parent.width
-                  placeholderText: "SUPER + ALT + B"
-                  foreground: root.foreground
-                  accent: root.selectedText
+                  text: {
+                    if (!Local.HotkeyService.enabled) return "Built-in hotkey is off"
+                    if (!Local.HotkeyService.prettyActive) return "No key registered: every choice is in use"
+                    return "Opens with " + Local.HotkeyService.prettyActive
+                  }
+                  color: root.foreground
                   font.family: root.fontFamily
-                  onTextChanged: root.hotkeyInput = text
-                  // Enter is accepted here so the overlay handler does not see
-                  // the same press again after the field loses focus.
-                  Keys.onPressed: function(event) {
-                    if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) { event.accepted = true; root.applyHotkey() }
+                  font.pixelSize: Style.font.title
+                  elide: Text.ElideRight
+                }
+
+                Text {
+                  textFormat: Text.PlainText
+                  width: parent.width
+                  visible: Local.HotkeyService.enabled && Local.HotkeyService.preferredOwner !== ""
+                  text: Local.HotkeyService.pretty(Local.HotkeyService.hotkey) + " is already used for “" + Local.HotkeyService.preferredOwner + "”, so a free key was picked instead."
+                  color: root.foreground
+                  opacity: 0.62
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.caption
+                  wrapMode: Text.WordWrap
+                }
+
+                // Change it: type a combination, Enter or the button applies.
+                Row {
+                  width: parent.width
+                  spacing: Style.spacing.controlGap
+
+                  TextField {
+                    id: hotkeyField
+                    width: parent.width - useKeyButton.width - parent.spacing
+                    placeholderText: "SUPER + B"
+                    foreground: root.foreground
+                    accent: root.selectedText
+                    font.family: root.fontFamily
+                    onTextChanged: root.hotkeyInput = text
+                    // Enter is accepted here so the overlay handler does not see
+                    // the same press again after the field loses focus.
+                    Keys.onPressed: function(event) {
+                      if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) { event.accepted = true; root.applyHotkey() }
+                    }
+                  }
+
+                  Button {
+                    id: useKeyButton
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "Use this key"
+                    bordered: true
+                    selected: true
+                    foreground: root.foreground
+                    accent: root.selectedText
+                    fontFamily: root.fontFamily
+                    onClicked: root.applyHotkey()
                   }
                 }
 
@@ -3122,74 +3193,60 @@ Item {
                   width: parent.width
                   text: root.hotkeyCheck.message
                   color: root.hotkeyCheck.ok ? root.foreground : Color.urgent
-                  opacity: root.hotkeyCheck.ok ? 0.7 : 1
+                  opacity: root.hotkeyCheck.ok ? 0.62 : 1
                   font.family: root.fontFamily
                   font.pixelSize: Style.font.caption
                   wrapMode: Text.WordWrap
                 }
 
-                Text {
-                  textFormat: Text.PlainText
-                  text: "Suggestions  ·  ↑ ↓ or click to pick one"
-                  color: root.foreground
-                  opacity: 0.45
-                  font.family: root.fontFamily
-                  font.pixelSize: Style.font.caption
+                Toggle {
+                  width: parent.width
+                  label: "Built-in hotkey"
+                  description: Local.HotkeyService.enabled
+                    ? "The plugin registers the key itself. Nothing in bindings.lua is touched."
+                    : "Off. To bind it yourself, add this line to ~/.config/hypr/bindings.lua:"
+                  checked: Local.HotkeyService.enabled
+                  foreground: root.foreground
+                  accent: root.selectedText
+                  fontFamily: root.fontFamily
+                  onClicked: root.toggleHotkeyEnabled()
                 }
 
-                Column {
+                BorderSurface {
+                  visible: !Local.HotkeyService.enabled
                   width: parent.width
-                  spacing: Style.spacing.xs
+                  height: snippetText.implicitHeight + Style.space(16)
+                  radius: root.cornerRadius
+                  color: Util.alpha(root.foreground, 0.06)
+                  borderSpec: Border.flat(Util.alpha(root.foreground, 0.2), Style.normalBorderWidth)
 
-                  Repeater {
-                    model: root.hotkeySuggestions
-
-                    delegate: Rectangle {
-                      id: suggestionRow
-                      width: parent.width
-                      height: root.hotkeyRowHeight
-                      radius: root.cornerRadius
-                      readonly property bool current: modelData.combo === root.hotkeyCheck.combo
-                      color: current ? root.selectedBackground : (suggestionHover.containsMouse ? Util.alpha(root.selectedBackground, 0.5) : "transparent")
-
-                      Text {
-                        textFormat: Text.PlainText
-                        anchors.left: parent.left
-                        anchors.leftMargin: Style.space(10)
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: modelData.pretty
-                        color: suggestionRow.current ? root.selectedText : root.foreground
-                        opacity: modelData.state === "taken" ? 0.5 : 1
-                        font.family: root.fontFamily
-                        font.pixelSize: Style.font.body
-                      }
-
-                      Text {
-                        textFormat: Text.PlainText
-                        anchors.right: parent.right
-                        anchors.rightMargin: Style.space(10)
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: modelData.label
-                        color: suggestionRow.current ? root.selectedText : root.foreground
-                        opacity: modelData.state === "taken" ? 0.5 : 0.7
-                        font.family: root.fontFamily
-                        font.pixelSize: Style.font.caption
-                        elide: Text.ElideRight
-                        width: Math.min(implicitWidth, parent.width / 2)
-                      }
-
-                      MouseArea {
-                        id: suggestionHover
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: root.chooseHotkeySuggestion(index)
-                      }
-                    }
+                  Text {
+                    id: snippetText
+                    textFormat: Text.PlainText
+                    anchors.fill: parent
+                    anchors.margins: Style.space(8)
+                    text: root.bindingSnippet
+                    color: root.foreground
+                    font.family: root.fontFamily
+                    font.pixelSize: Style.font.caption
+                    wrapMode: Text.WrapAnywhere
                   }
                 }
 
-                // Footer: legend + buttons.
+                Toggle {
+                  width: parent.width
+                  label: "Icon in the bar"
+                  description: root.iconInBar
+                    ? "Click it to open the launcher. Hover it to see the hotkey."
+                    : "Hidden. You will need to remember the hotkey" + (Local.HotkeyService.enabled && Local.HotkeyService.prettyActive ? " (" + Local.HotkeyService.prettyActive + ")" : "") + " to get here."
+                  checked: root.iconInBar
+                  foreground: root.foreground
+                  accent: root.selectedText
+                  fontFamily: root.fontFamily
+                  onClicked: root.toggleIconInBar()
+                }
+
+                // Footer: legend + button.
                 Item {
                   width: parent.width
                   height: Style.spacing.controlHeight
@@ -3197,10 +3254,10 @@ Item {
                   Text {
                     textFormat: Text.PlainText
                     anchors.left: parent.left
-                    anchors.right: hotkeyButtons.left
+                    anchors.right: doneButton.left
                     anchors.rightMargin: Style.space(10)
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "Enter use it  ·  Esc cancel"
+                    text: "Enter use key  ·  Esc back"
                     color: root.foreground
                     opacity: 0.45
                     font.family: root.fontFamily
@@ -3208,39 +3265,16 @@ Item {
                     elide: Text.ElideRight
                   }
 
-                  Row {
-                    id: hotkeyButtons
+                  Button {
+                    id: doneButton
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
-                    spacing: Style.spacing.controlGap
-
-                    Button {
-                      text: Local.HotkeyService.enabled ? "Turn off" : "Turn on"
-                      bordered: true
-                      foreground: root.foreground
-                      accent: root.selectedText
-                      fontFamily: root.fontFamily
-                      onClicked: root.toggleHotkeyEnabled()
-                    }
-
-                    Button {
-                      text: "Cancel"
-                      bordered: true
-                      foreground: root.foreground
-                      accent: root.selectedText
-                      fontFamily: root.fontFamily
-                      onClicked: root.closeHotkey()
-                    }
-
-                    Button {
-                      text: "Use this key"
-                      bordered: true
-                      selected: true
-                      foreground: root.foreground
-                      accent: root.selectedText
-                      fontFamily: root.fontFamily
-                      onClicked: root.applyHotkey()
-                    }
+                    text: "Done"
+                    bordered: true
+                    foreground: root.foreground
+                    accent: root.selectedText
+                    fontFamily: root.fontFamily
+                    onClicked: root.closeOptions()
                   }
                 }
               }

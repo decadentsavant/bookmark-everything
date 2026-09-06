@@ -206,6 +206,11 @@ function luaBind(combo, command) {
 
 function luaUnbind(combo) { return "hl.unbind(" + luaString(combo) + ")" }
 
+// The line a user pastes into bindings.lua to bind the launcher themselves.
+function luaBindUser(combo, pluginId) {
+  return 'o.bind("' + combo + '", "Bookmarks", "omarchy-shell shell toggle ' + pluginId + '")'
+}
+
 // Lua that moves our bind onto `target` (or removes it when target is ""),
 // touching only combos held exclusively by us. "" when nothing needs doing.
 function applyScript(binds, target, command) {

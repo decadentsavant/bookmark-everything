@@ -33,7 +33,7 @@
 <table>
 <tr><th>Key</th><th>What it does</th></tr>
 <tr><td><kbd>Super</kbd> + <kbd>B</kbd></td><td>Toggle the launcher in the configured mode (Hints by default). If that key was already taken when the plugin loaded, another one was chosen; see <a href="#hotkey">Hotkey</a>.</td></tr>
-<tr><td>Bookmark icon in the bar</td><td>Click to open. Hover to see the current hotkey. Middle-click opens in Search mode. Right-click for options.</td></tr>
+<tr><td>Bookmark icon in the bar</td><td>Click to open. Hover to see the current hotkey. Right-click for options.</td></tr>
 <tr><td><code>bkmke</code></td><td>The same from a terminal. Try <code>bkmke help</code> for the other subcommands.</td></tr>
 </table>
 
@@ -41,9 +41,10 @@
 <p>The plugin registers its key by itself when it loads, so nothing needs editing. It prefers <kbd>Super</kbd> + <kbd>B</kbd>. If something on your machine already uses that, it takes the first free key from a short list (<kbd>Super</kbd> + <kbd>Alt</kbd> + <kbd>B</kbd> first) and tells you once with a notification.</p>
 <table>
 <tr><th>To…</th><th>Do this</th></tr>
-<tr><td>See the current key</td><td>Hover the bookmark icon in the bar, or look at the chip in the launcher's header. Omarchy's own keybindings menu (<kbd>Super</kbd> + <kbd>K</kbd>) lists it as “Bookmark Everything”.</td></tr>
-<tr><td>Change it</td><td>Right-click the bar icon and choose <em>Change hotkey…</em>, or press <kbd>Ctrl</kbd> + <kbd>K</kbd> in the launcher. Type a combination such as <code>SUPER + ALT + B</code>, or pick one of the suggestions with <kbd>↑</kbd> <kbd>↓</kbd> or the mouse. Each suggestion says whether it is free or what already uses it. <kbd>Enter</kbd> applies.</td></tr>
-<tr><td>Turn the built-in key off</td><td>The same options card, the <em>Turn off</em> button in the chooser, or <code>bkmke hotkey off</code>. You can then bind the launcher yourself in <code>~/.config/hypr/bindings.lua</code>.</td></tr>
+<tr><td>See the current key</td><td>Hover the bookmark icon in the bar. Omarchy's own keybindings menu (<kbd>Super</kbd> + <kbd>K</kbd>) lists it as “Bookmark Everything”.</td></tr>
+<tr><td>Change it</td><td>Right-click the bar icon, or click the gear at the bottom of the launcher (<kbd>Ctrl</kbd> + <kbd>K</kbd>). The Options screen shows what opens the launcher now. Type a combination such as <code>SUPER + ALT + B</code> and press <kbd>Enter</kbd>. A key something else already uses is refused, with the reason.</td></tr>
+<tr><td>Turn the built-in key off</td><td>The <em>Built-in hotkey</em> toggle on the Options screen, or <code>bkmke hotkey off</code>. The screen then shows the exact line to add to <code>~/.config/hypr/bindings.lua</code> if you want to bind the launcher yourself.</td></tr>
+<tr><td>Hide the icon in the bar</td><td>The <em>Icon in the bar</em> toggle on the Options screen, or <code>bkmke icon off</code>. The launcher stays loaded and the hotkey keeps working; remember it, since it is then the only way in.</td></tr>
 <tr><td>Use a key that is already taken</td><td>Free it first. For an Omarchy default or one of your own, add <code>hl.unbind("SUPER + B")</code> (with the key in question) to <code>~/.config/hypr/bindings.lua</code>; for another plugin, change that plugin's key. Then choose it here.</td></tr>
 </table>
 <p>Why type instead of press: Hyprland acts on a bound combination before the launcher could see it, so “press the keys you want” would launch whatever holds them.</p>

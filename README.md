@@ -49,8 +49,8 @@ hover it to see the current hotkey, right-click it for options.
 
 If `Super+B` is already bound on your machine, the plugin uses the first free
 key from a short list (`Super+Alt+B` first) and sends one notification saying
-which. Change it any time from the bar icon, or press `Ctrl+K` inside the
-launcher. See [Hotkey](#hotkey) below.
+which. Change it any time: right-click the bar icon, or click the gear at the
+bottom of the launcher. See [Hotkey](#hotkey) below.
 
 The first launch seeds a few starter bookmarks so you can see each type in
 action: your home and Downloads folders, this project and Baton on GitHub, the
@@ -76,6 +76,8 @@ bkmke apps               pick installed applications to add
 bkmke import <file>      merge a JSON export
 bkmke export [file]      write all bookmarks to a JSON file
 bkmke hotkey [combo|off] show the hotkey, set one ("SUPER + ALT + B"), or turn it off
+bkmke icon on|off        show or hide the bookmark icon in the bar
+bkmke options            open the options screen
 ```
 
 ### Optional: Omarchy menu entries
@@ -124,7 +126,7 @@ never written to `~/.config/hypr`. If you added `bookmarks.*` rows to
 | Ctrl+E | Edit the highlighted bookmark |
 | Delete, Backspace, or Ctrl+D | Delete the highlighted bookmark, with confirmation (Backspace: Hint mode only) |
 | Ctrl+I / Ctrl+O | Import / export |
-| Ctrl+K | Change the hotkey that opens the launcher |
+| Ctrl+K or the gear at the bottom | Options: the hotkey and the bar icon |
 | `zz` or `?` | Open the built-in help |
 | Esc | Clear a half-typed code, then close |
 
@@ -148,15 +150,17 @@ the plugin notices and puts its key back.
 - **Preferred key:** `Super+B`. If that is taken, the first free one of
   `Super+Alt+B`, `Super+Ctrl+Alt+B`, `Super+Alt+M`, `Super+Alt+U`,
   `Super+Alt+/` is used and you get one notification saying so.
-- **See it:** hover the bookmark icon in the bar, or look at the chip in the
-  launcher's header. `Super+K` (Omarchy's keybindings menu) lists it too.
-- **Change it:** right-click the bar icon → *Change hotkey…*, or press
-  `Ctrl+K` in the launcher. Type a combination or pick a suggestion; each one
-  shows whether it is free or what already uses it. Nothing is captured from
-  a key press, because Hyprland would act on a bound combination before the
-  launcher could see it.
-- **Turn it off:** the same options card, or `bkmke hotkey off`. Then bind it
-  yourself if you prefer:
+- **See it:** hover the bookmark icon in the bar. `Super+K` (Omarchy's
+  keybindings menu) lists it too, as "Bookmark Everything".
+- **Change it:** right-click the bar icon, or click the gear at the bottom of
+  the launcher (`Ctrl+K`). The Options screen shows what opens the launcher
+  now; type a combination such as `SUPER + ALT + B` and press Enter. A key
+  something else already uses is refused, with the reason. Nothing is
+  captured from a key press, because Hyprland would act on a bound
+  combination before the launcher could see it.
+- **Turn it off:** the *Built-in hotkey* toggle on the same screen, or
+  `bkmke hotkey off`. The screen then shows the exact line to add to
+  `~/.config/hypr/bindings.lua` if you want to bind it yourself:
 
   ```lua
   o.bind("SUPER + B", "Bookmarks", "omarchy-shell shell toggle io.github.decadentsavant.bookmark-everything")
@@ -164,6 +168,9 @@ the plugin notices and puts its key back.
 
   A binding of your own is also detected: if `Super+B` is already bound when
   the plugin loads, the plugin leaves it alone rather than doubling it.
+- **Hide the bar icon:** the *Icon in the bar* toggle, or `bkmke icon off`.
+  The launcher stays loaded and the hotkey keeps working; the screen reminds
+  you that the hotkey is then the only way in.
 - **Take over a key that is in use:** free it first in
   `~/.config/hypr/bindings.lua`, for example `hl.unbind("SUPER + B")`, then
   choose it in the launcher.
@@ -228,10 +235,11 @@ omarchy-shell shell call io.github.decadentsavant.bookmark-everything addFromCli
 omarchy-shell shell call io.github.decadentsavant.bookmark-everything pickApplications ''
 omarchy-shell shell call io.github.decadentsavant.bookmark-everything importFrom <path>
 omarchy-shell shell call io.github.decadentsavant.bookmark-everything exportTo <path>
-omarchy-shell shell summon io.github.decadentsavant.bookmark-everything '{"hotkey":true}'
+omarchy-shell shell summon io.github.decadentsavant.bookmark-everything '{"options":true}'
 omarchy-shell shell call io.github.decadentsavant.bookmark-everything hotkeyStatus ''
 omarchy-shell shell call io.github.decadentsavant.bookmark-everything setHotkey 'SUPER + ALT + B'
 omarchy-shell shell call io.github.decadentsavant.bookmark-everything setHotkeyEnabled false
+omarchy-shell shell call io.github.decadentsavant.bookmark-everything setIconInBar false
 ```
 
 ## Development
@@ -239,9 +247,9 @@ omarchy-shell shell call io.github.decadentsavant.bookmark-everything setHotkeyE
 | File | Purpose |
 |------|---------|
 | `manifest.json` | Plugin manifest |
-| `BookmarkEverything.qml` | The overlay: list, form, pickers, import/export, hotkey chooser |
+| `BookmarkEverything.qml` | The overlay: list, form, pickers, import/export, options |
 | `BookmarkModel.js` | Model logic: parsing, hint assignment, fuzzy search, import merge |
-| `BookmarkBarWidget.qml` | The bar icon and its options card |
+| `BookmarkBarWidget.qml` | The bar icon |
 | `HotkeyService.qml` | Singleton that registers the hotkey and keeps it in place |
 | `HotkeyModel.js` | Hotkey logic: combo parsing, `hyprctl binds` parsing, fallback choice, Lua generation |
 | `qmldir` | Declares the singleton for the overlay and the bar widget |

@@ -2,7 +2,7 @@
 const fs = require('fs'), path = require('path'), assert = require('assert')
 const src = fs.readFileSync(path.join(__dirname, '..', 'HotkeyModel.js'), 'utf8').replace(/^\.pragma library\s*$/m, '')
 const H = {}
-new Function('exports', src + '\n' + ['OWNER','DEFAULT_HOTKEY','CANDIDATES','parseCombo','formatCombo','pretty','parseBinds','status','ourCombos','resolve','luaBind','luaUnbind','applyScript','releaseScript','parseSettings','serializeSettings','summary'].map(n => `exports.${n} = ${n}`).join('\n'))(H)
+new Function('exports', src + '\n' + ['OWNER','DEFAULT_HOTKEY','CANDIDATES','parseCombo','formatCombo','pretty','parseBinds','status','ourCombos','resolve','luaBind','luaUnbind','luaBindUser','applyScript','releaseScript','parseSettings','serializeSettings','summary'].map(n => `exports.${n} = ${n}`).join('\n'))(H)
 
 // parseCombo
 let p = H.parseCombo('super+alt+b')
@@ -90,6 +90,7 @@ assert.equal(H.resolve([], 'garbage').preferred, H.DEFAULT_HOTKEY)   // invalid 
 const cmd = 'omarchy-shell shell toggle io.github.decadentsavant.bookmark-everything'
 assert.equal(H.luaBind('SUPER + B', cmd), `o.bind("SUPER + B", "${H.OWNER}", "${cmd}")`)
 assert.equal(H.luaUnbind('SUPER + B'), 'hl.unbind("SUPER + B")')
+assert.equal(H.luaBindUser('SUPER + B', 'io.github.decadentsavant.bookmark-everything'), 'o.bind("SUPER + B", "Bookmarks", "omarchy-shell shell toggle io.github.decadentsavant.bookmark-everything")')
 assert.equal(H.applyScript(binds, 'SUPER + B', cmd), '')                              // already there
 assert.equal(H.applyScript(binds, 'SUPER + ALT + B', cmd), `hl.unbind("SUPER + B"); ${H.luaBind('SUPER + ALT + B', cmd)}`)
 assert.equal(H.applyScript(noOurs, 'SUPER + B', cmd), H.luaBind('SUPER + B', cmd))

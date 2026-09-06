@@ -9,6 +9,8 @@
 #   bkmke import <file.json>    merge a JSON export (backs up first)
 #   bkmke export [file.json]    write all bookmarks to a JSON file
 #   bkmke hotkey [combo|off]    show the hotkey; set one ("SUPER + ALT + B"); or turn it off
+#   bkmke icon on|off           show or hide the bookmark icon in the bar
+#   bkmke options               open the options screen
 #   bkmke path                  print the storage file path
 set -euo pipefail
 
@@ -41,7 +43,14 @@ case "${1:-toggle}" in
       on) call setHotkeyEnabled true ;;
       *) call setHotkey "$2" ;;
     esac ;;
+  icon)
+    case "${2:-}" in
+      on|show) call setIconInBar true ;;
+      off|hide) call setIconInBar false ;;
+      *) echo "usage: bkmke icon on|off" >&2; exit 2 ;;
+    esac ;;
+  options|settings) call openHotkeySettings "" ;;
   path) echo "$STORE" ;;
-  -h|--help|help) sed -n '2,14p' "$0" ;;
+  -h|--help|help) sed -n '2,16p' "$0" ;;
   *) echo "unknown command: $1" >&2; exit 2 ;;
 esac
