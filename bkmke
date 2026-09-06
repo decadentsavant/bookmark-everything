@@ -8,6 +8,7 @@
 #   bkmke apps                  pick installed applications to add (multi-select)
 #   bkmke import <file.json>    merge a JSON export (backs up first)
 #   bkmke export [file.json]    write all bookmarks to a JSON file
+#   bkmke hotkey [combo|off]    show the hotkey; set one ("SUPER + ALT + B"); or turn it off
 #   bkmke path                  print the storage file path
 set -euo pipefail
 
@@ -33,7 +34,14 @@ case "${1:-toggle}" in
   export)
     out="${2:-$HOME/bookmark-everything-export-$(date +%Y%m%d-%H%M%S).json}"
     call exportTo "$(realpath -m "$out")" ;;
+  hotkey)
+    case "${2:-}" in
+      "") call hotkeyStatus "" ;;
+      off|none) call setHotkeyEnabled false ;;
+      on) call setHotkeyEnabled true ;;
+      *) call setHotkey "$2" ;;
+    esac ;;
   path) echo "$STORE" ;;
-  -h|--help|help) sed -n '2,13p' "$0" ;;
+  -h|--help|help) sed -n '2,14p' "$0" ;;
   *) echo "unknown command: $1" >&2; exit 2 ;;
 esac

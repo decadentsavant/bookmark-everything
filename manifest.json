@@ -2,15 +2,24 @@
   "schemaVersion": 1,
   "id": "io.github.decadentsavant.bookmark-everything",
   "name": "Bookmark Everything",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": "decadentsavant",
   "license": "MIT",
   "description": "Keyboard-first launcher for bookmarked URLs, files, folders, and applications",
   "kinds": [
-    "overlay"
+    "overlay",
+    "bar-widget"
   ],
   "keepLoaded": true,
   "entryPoints": {
-    "overlay": "BookmarkEverything.qml"
+    "overlay": "BookmarkEverything.qml",
+    "barWidget": "BookmarkBarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "Bookmark Everything",
+    "description": "Opens the bookmark launcher and shows its hotkey",
+    "category": "Launcher",
+    "allowMultiple": false,
+    "defaultSection": "right"
   }
 }

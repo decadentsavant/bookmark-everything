@@ -32,9 +32,22 @@
 <h2>Open the launcher</h2>
 <table>
 <tr><th>Key</th><th>What it does</th></tr>
-<tr><td><kbd>Super</kbd> + <kbd>B</kbd></td><td>Toggle the launcher in the configured mode (Hints by default).</td></tr>
+<tr><td><kbd>Super</kbd> + <kbd>B</kbd></td><td>Toggle the launcher in the configured mode (Hints by default). If that key was already taken when the plugin loaded, another one was chosen; see <a href="#hotkey">Hotkey</a>.</td></tr>
+<tr><td>Bookmark icon in the bar</td><td>Click to open. Hover to see the current hotkey. Middle-click opens in Search mode. Right-click for options.</td></tr>
 <tr><td><code>bkmke</code></td><td>The same from a terminal. Try <code>bkmke help</code> for the other subcommands.</td></tr>
 </table>
+
+<h2 id="hotkey">Hotkey</h2>
+<p>The plugin registers its key by itself when it loads, so nothing needs editing. It prefers <kbd>Super</kbd> + <kbd>B</kbd>. If something on your machine already uses that, it takes the first free key from a short list (<kbd>Super</kbd> + <kbd>Alt</kbd> + <kbd>B</kbd> first) and tells you once with a notification.</p>
+<table>
+<tr><th>To…</th><th>Do this</th></tr>
+<tr><td>See the current key</td><td>Hover the bookmark icon in the bar, or look at the chip in the launcher's header. Omarchy's own keybindings menu (<kbd>Super</kbd> + <kbd>K</kbd>) lists it as “Bookmark Everything”.</td></tr>
+<tr><td>Change it</td><td>Right-click the bar icon and choose <em>Change hotkey…</em>, or press <kbd>Ctrl</kbd> + <kbd>K</kbd> in the launcher. Type a combination such as <code>SUPER + ALT + B</code>, or pick one of the suggestions with <kbd>↑</kbd> <kbd>↓</kbd> or the mouse. Each suggestion says whether it is free or what already uses it. <kbd>Enter</kbd> applies.</td></tr>
+<tr><td>Turn the built-in key off</td><td>The same options card, the <em>Turn off</em> button in the chooser, or <code>bkmke hotkey off</code>. You can then bind the launcher yourself in <code>~/.config/hypr/bindings.lua</code>.</td></tr>
+<tr><td>Use a key that is already taken</td><td>Free it first. For an Omarchy default or one of your own, add <code>hl.unbind("SUPER + B")</code> (with the key in question) to <code>~/.config/hypr/bindings.lua</code>; for another plugin, change that plugin's key. Then choose it here.</td></tr>
+</table>
+<p>Why type instead of press: Hyprland acts on a bound combination before the launcher could see it, so “press the keys you want” would launch whatever holds them.</p>
+<div class="tip">The key lives in the running compositor, not in a file under <code>~/.config/hypr</code>. It is put back after <code>hyprctl reload</code> and removed when the plugin is disabled or removed. If you already bound the launcher yourself in <code>bindings.lua</code>, the plugin sees the key in use and leaves it to you.</div>
 
 <h2>Hint mode</h2>
 <p>Every bookmark has a stable two-letter code shown in the left column. Type the two letters and the bookmark opens immediately. Typing the first letter narrows the list to matching codes.</p>
@@ -106,8 +119,8 @@
 <pre>~/.config/omarchy/bookmark-everything.json              your bookmarks (plain JSON, edit freely)
 ~/.config/omarchy/bookmark-everything.json.bak-&lt;time&gt;  automatic backup taken before each import
 ~/.config/omarchy/plugins/io.github.decadentsavant.bookmark-everything/      the plugin itself (this page included)
-~/.config/omarchy/shell.json                  plugin settings, see below
-~/.config/hypr/bindings.lua                   the Super+B binding</pre>
+~/.config/omarchy/shell.json                  open mode, see below
+~/.config/omarchy/bookmark-everything.settings.json  your hotkey choice; created the first time you change it</pre>
 <p>An entry looks like this. The file reloads automatically when you edit it by hand; missing hints or ids are filled in.</p>
 <pre>{
   "id": "pacman-cheatsheet",
@@ -124,9 +137,8 @@
 <pre>"plugins": [
   { "id": "io.github.decadentsavant.bookmark-everything", "openMode": "search" }
 ]</pre>
-<p>The hotkey lives in <code>~/.config/hypr/bindings.lua</code>. To open straight into Search from a second key, pass a mode in the payload:</p>
-<pre>o.bind("SUPER + B", "Bookmarks", "omarchy-shell shell toggle io.github.decadentsavant.bookmark-everything")
-o.bind("SUPER + SHIFT + B", "Bookmark search", "omarchy-shell shell summon io.github.decadentsavant.bookmark-everything '{\"mode\":\"search\"}'")</pre>
+<p>The hotkey is covered <a href="#hotkey">above</a>. To open straight into Search from a second key of your own, pass a mode in the payload from <code>~/.config/hypr/bindings.lua</code>:</p>
+<pre>o.bind("SUPER + SHIFT + B", "Bookmark search", "omarchy-shell shell summon io.github.decadentsavant.bookmark-everything '{\"mode\":\"search\"}'")</pre>
 
 <h2>Import and export</h2>
 <p>Both use the same JSON format as the storage file. Import merges: an entry with the same id replaces the old one, new ids are appended, and any imported hint that collides with an existing one is reassigned so your codes stay stable. A backup is written before the merge.</p>

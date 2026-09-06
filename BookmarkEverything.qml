@@ -5,6 +5,8 @@ import QtQuick
 import qs.Commons
 import qs.Ui
 import "BookmarkModel.js" as Model
+import "HotkeyModel.js" as HK
+import "." as Local
 
 // Bookmark Everything — keyboard-first launcher for URLs, files, folders, and
 // applications. Summoned through the shell:
@@ -36,8 +38,14 @@ Item {
   }
   readonly property string configuredOpenMode: root.pluginSettings.openMode === "search" ? "search" : "hints"
 
+  // The hotkey itself is registered by HotkeyService, shared with the bar
+  // widget. Retaining it here keeps the bind alive for as long as the overlay
+  // is loaded, and releasing it on unload removes the bind.
+  Component.onCompleted: Local.HotkeyService.retain()
+  Component.onDestruction: Local.HotkeyService.release()
+
   property bool opened: false
-  property string view: "list"        // list | form | apps | prompt
+  property string view: "list"        // list | form | apps | prompt | hotkey
   property string mode: "hints"       // hints | search
   property string openMode: "hints"   // mode the launcher opened in (Esc target)
   property string hintBuffer: ""
@@ -95,6 +103,32 @@ Item {
   property string promptKind: "import"
   property bool importPending: false
 
+  // ---------------------------------------------------------- hotkey view
+  property string hotkeyInput: ""
+  property int hotkeyIndex: -1
+  readonly property int hotkeyRowHeight: Style.space(30)
+  // What the typed combination means right now, against the live bind list.
+  readonly property var hotkeyCheck: {
+    var binds = Local.HotkeyService.binds
+    var p = HK.parseCombo(root.hotkeyInput)
+    if (p.error) return { ok: false, message: p.error, combo: "" }
+    var st = HK.status(binds, p.combo)
+    if (st.state === "taken") return { ok: false, message: HK.pretty(p.combo) + " is already used for “" + st.owner + "”. Pick another, or free it in ~/.config/hypr/bindings.lua.", combo: p.combo }
+    if (p.combo === Local.HotkeyService.active) return { ok: true, message: HK.pretty(p.combo) + " is the current hotkey.", combo: p.combo }
+    return { ok: true, message: HK.pretty(p.combo) + " is free. Enter to use it.", combo: p.combo }
+  }
+  readonly property var hotkeySuggestions: {
+    var binds = Local.HotkeyService.binds
+    var list = HK.CANDIDATES.slice()
+    var cur = Local.HotkeyService.hotkey
+    if (cur && list.indexOf(cur) === -1) list.unshift(cur)
+    return list.map(function(c) {
+      var st = HK.status(binds, c)
+      var label = st.state === "taken" ? "Used for " + st.owner : (c === Local.HotkeyService.active ? "Current" : "Free")
+      return { combo: c, pretty: HK.pretty(c), state: st.state, label: label }
+    })
+  }
+
   // Shares the [menu] surface tokens so themes that style the Omarchy menu
   // style this launcher too.
   property color background: Color.menu.background
@@ -126,6 +160,7 @@ Item {
     if (root.view === "apps") return Math.max(4, Math.min(appsModel.count, 10)) * (root.rowHeight + root.rowSpacing) + Style.space(22)
     if (root.view === "places") return Math.max(4, Math.min(placesModel.count, 10)) * (root.rowHeight + root.rowSpacing) + Style.space(22)
     if (root.view === "prompt") return Style.spacing.controlHeight + Style.space(30)
+    if (root.view === "hotkey") return Style.spacing.controlHeight * 2 + Style.space(40) + root.hotkeySuggestions.length * (root.hotkeyRowHeight + Style.spacing.xs) + Style.spacing.md * 4 + Style.space(8)
     return root.listRows * (root.rowHeight + root.rowSpacing)
   }
   property int cardHeight: Math.min(contentMargin * 2 + headerHeight + contentSpacing + bodyHeight, panel.height - Style.gapsOut * 2)
@@ -155,6 +190,7 @@ Item {
     if (root.seedPending) root.seedDefaults()   // index still empty: seed without the app sample
     root.rebuildDisplay()
     if (payload.add !== undefined) root.openAdd(String(payload.add || ""))
+    else if (payload.hotkey) root.openHotkey()
     Qt.callLater(function() { keyCatcher.forceActiveFocus() })
   }
 
@@ -226,8 +262,30 @@ Item {
     return "ok"
   }
 
+  // IPC: omarchy-shell shell call <id> openHotkeySettings ''
+  function openHotkeySettings() {
+    root.ensureOpen()
+    root.openHotkey()
+    return "ok"
+  }
+
+  // IPC: omarchy-shell shell call <id> setHotkey 'SUPER + ALT + B'
+  function setHotkey(combo) {
+    var err = Local.HotkeyService.setHotkey(String(combo || ""))
+    return err ? "error: " + err : "ok"
+  }
+
+  // IPC: omarchy-shell shell call <id> setHotkeyEnabled false
+  function setHotkeyEnabled(value) {
+    Local.HotkeyService.setEnabled(String(value) !== "false")
+    return "ok"
+  }
+
+  // IPC: omarchy-shell shell call <id> hotkeyStatus ''
+  function hotkeyStatus() { return Local.HotkeyService.summary }
+
   // IPC: omarchy-shell shell call <id> version '' — confirms which code is loaded.
-  readonly property string codeVersion: "1.0.0"
+  readonly property string codeVersion: "1.1.0"
   function version() { return root.codeVersion }
 
   // IPC: omarchy-shell shell call <id> resolveApp <target> — shows which desktop
@@ -1399,6 +1457,7 @@ Item {
     if (ctrl && event.key === Qt.Key_O) { root.openPrompt("export"); return true }
     if (ctrl && event.key === Qt.Key_D) { root.requestDelete(root.selectedEntry()); return true }
     if (ctrl && event.key === Qt.Key_A) { root.pickApplications(); return true }
+    if (ctrl && event.key === Qt.Key_K) { root.openHotkey(); return true }
     if (event.key === Qt.Key_Delete) { root.requestDelete(root.selectedEntry()); return true }
     // Backspace deletes too (Mac keyboards have no Delete key), but only in
     // Hint mode with no half-typed code; in Search mode it edits the query.
@@ -1548,6 +1607,65 @@ Item {
   function handlePromptKey(event) {
     if (event.key === Qt.Key_Escape) { root.closePrompt(); return true }
     if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) { root.runPrompt(); return true }
+    return false
+  }
+
+  // --------------------------------------------------------------- hotkey
+  // Choosing a key is typed or picked from a list, never captured from a key
+  // press: Hyprland acts on a bound combination before the overlay could see
+  // it, so "press the keys you want" would launch whatever holds them.
+
+  function openHotkey() {
+    root.actionsOpen = false
+    root.deleteConfirmOpen = false
+    root.view = "hotkey"
+    root.hotkeyIndex = -1
+    hotkeyField.text = Local.HotkeyService.hotkey
+    Local.HotkeyService.scan()
+    Qt.callLater(function() { hotkeyField.forceActiveFocus(); hotkeyField.selectAll() })
+  }
+
+  function closeHotkey() {
+    root.view = "list"
+    Qt.callLater(function() { keyCatcher.forceActiveFocus() })
+  }
+
+  function applyHotkey() {
+    var check = root.hotkeyCheck
+    if (!check.ok) { root.showNotice(check.message); return }
+    var err = Local.HotkeyService.setHotkey(check.combo)
+    if (err) { root.showNotice(err); return }
+    root.closeHotkey()
+    root.showNotice("Hotkey: " + HK.pretty(check.combo))
+  }
+
+  function chooseHotkeySuggestion(index) {
+    var list = root.hotkeySuggestions
+    if (index < 0 || index >= list.length) return
+    root.hotkeyIndex = index
+    hotkeyField.text = list[index].combo
+    hotkeyField.cursorPosition = hotkeyField.text.length
+  }
+
+  function cycleHotkeySuggestion(delta) {
+    var list = root.hotkeySuggestions
+    if (!list.length) return
+    var i = root.hotkeyIndex
+    if (i < 0) for (var k = 0; k < list.length; k++) if (list[k].combo === root.hotkeyCheck.combo) { i = k; break }
+    i = i < 0 ? (delta > 0 ? 0 : list.length - 1) : (i + delta + list.length) % list.length
+    root.chooseHotkeySuggestion(i)
+  }
+
+  function toggleHotkeyEnabled() {
+    Local.HotkeyService.setEnabled(!Local.HotkeyService.enabled)
+    root.showNotice(Local.HotkeyService.enabled ? "Built-in hotkey on" : "Built-in hotkey off")
+  }
+
+  function handleHotkeyKey(event) {
+    if (event.key === Qt.Key_Escape) { root.closeHotkey(); return true }
+    if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) { root.applyHotkey(); return true }
+    if (event.key === Qt.Key_Up) { root.cycleHotkeySuggestion(-1); return true }
+    if (event.key === Qt.Key_Down) { root.cycleHotkeySuggestion(1); return true }
     return false
   }
 
@@ -1768,6 +1886,7 @@ Item {
           else if (root.view === "apps") handled = root.handleAppsKey(event)
           else if (root.view === "places") handled = root.handlePlacesKey(event)
           else if (root.view === "prompt") handled = root.handlePromptKey(event)
+          else if (root.view === "hotkey") handled = root.handleHotkeyKey(event)
           else handled = root.handleListKey(event)
           if (handled) event.accepted = true
         }
@@ -1798,12 +1917,13 @@ Item {
                 if (root.view === "apps") return root.appsFilter || (root.appsBulkMode ? "Add applications…" : "Search applications…")
                 if (root.view === "places") return root.placesFilter || "Places you use…"
                 if (root.view === "prompt") return root.promptKind === "export" ? "Export bookmarks to file" : "Import bookmarks from file"
+                if (root.view === "hotkey") return "Key that opens the launcher"
                 if (root.mode === "search") return root.filterText || "Search bookmarks…"
                 return root.hintBuffer ? root.hintBuffer + "_" : "/ to search"
               }
               color: (root.view === "list" && root.mode === "hints" && root.hintBuffer) ? root.selectedText : root.foreground
               opacity: {
-                if (root.view === "form" || root.view === "prompt") return 1
+                if (root.view === "form" || root.view === "prompt" || root.view === "hotkey") return 1
                 if (root.view === "apps") return root.appsFilter ? 1 : 0.58
                 if (root.view === "places") return root.placesFilter ? 1 : 0.58
                 if (root.mode === "search") return root.filterText ? 1 : 0.58
@@ -1840,6 +1960,36 @@ Item {
                 font.pixelSize: Style.font.caption
                 elide: Text.ElideRight
                 width: Math.min(implicitWidth, Style.space(260))
+              }
+
+              // Hotkey chip — the key that opens the launcher; click to change it.
+              BorderSurface {
+                visible: root.view === "list"
+                anchors.verticalCenter: parent.verticalCenter
+                width: hotkeyLabel.implicitWidth + Style.space(14)
+                height: Style.space(22)
+                radius: root.cornerRadius
+                color: hotkeyHover.containsMouse ? root.selectedBackground : "transparent"
+                borderSpec: Border.flat(Util.alpha(root.foreground, 0.32), Style.normalBorderWidth)
+
+                Text {
+                  id: hotkeyLabel
+                  textFormat: Text.PlainText
+                  anchors.centerIn: parent
+                  text: Local.HotkeyService.enabled ? (Local.HotkeyService.prettyActive || "No hotkey") : "Hotkey off"
+                  color: hotkeyHover.containsMouse ? root.selectedText : root.foreground
+                  opacity: hotkeyHover.containsMouse ? 1 : 0.62
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.caption
+                }
+
+                MouseArea {
+                  id: hotkeyHover
+                  anchors.fill: parent
+                  hoverEnabled: true
+                  cursorShape: Qt.PointingHandCursor
+                  onClicked: root.openHotkey()
+                }
               }
 
               // Mode badge — click to switch between Hints and Search.
@@ -2937,6 +3087,161 @@ Item {
                   font.family: root.fontFamily
                   font.pixelSize: Style.font.caption
                   wrapMode: Text.WordWrap
+                }
+              }
+            }
+
+            // ============================================== hotkey view
+            Item {
+              anchors.fill: parent
+              visible: root.view === "hotkey"
+
+              Column {
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                spacing: Style.spacing.md
+
+                TextField {
+                  id: hotkeyField
+                  width: parent.width
+                  placeholderText: "SUPER + ALT + B"
+                  foreground: root.foreground
+                  accent: root.selectedText
+                  font.family: root.fontFamily
+                  onTextChanged: root.hotkeyInput = text
+                  // Enter is accepted here so the overlay handler does not see
+                  // the same press again after the field loses focus.
+                  Keys.onPressed: function(event) {
+                    if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) { event.accepted = true; root.applyHotkey() }
+                  }
+                }
+
+                Text {
+                  textFormat: Text.PlainText
+                  width: parent.width
+                  text: root.hotkeyCheck.message
+                  color: root.hotkeyCheck.ok ? root.foreground : Color.urgent
+                  opacity: root.hotkeyCheck.ok ? 0.7 : 1
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.caption
+                  wrapMode: Text.WordWrap
+                }
+
+                Text {
+                  textFormat: Text.PlainText
+                  text: "Suggestions  ·  ↑ ↓ or click to pick one"
+                  color: root.foreground
+                  opacity: 0.45
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.caption
+                }
+
+                Column {
+                  width: parent.width
+                  spacing: Style.spacing.xs
+
+                  Repeater {
+                    model: root.hotkeySuggestions
+
+                    delegate: Rectangle {
+                      id: suggestionRow
+                      width: parent.width
+                      height: root.hotkeyRowHeight
+                      radius: root.cornerRadius
+                      readonly property bool current: modelData.combo === root.hotkeyCheck.combo
+                      color: current ? root.selectedBackground : (suggestionHover.containsMouse ? Util.alpha(root.selectedBackground, 0.5) : "transparent")
+
+                      Text {
+                        textFormat: Text.PlainText
+                        anchors.left: parent.left
+                        anchors.leftMargin: Style.space(10)
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: modelData.pretty
+                        color: suggestionRow.current ? root.selectedText : root.foreground
+                        opacity: modelData.state === "taken" ? 0.5 : 1
+                        font.family: root.fontFamily
+                        font.pixelSize: Style.font.body
+                      }
+
+                      Text {
+                        textFormat: Text.PlainText
+                        anchors.right: parent.right
+                        anchors.rightMargin: Style.space(10)
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: modelData.label
+                        color: suggestionRow.current ? root.selectedText : root.foreground
+                        opacity: modelData.state === "taken" ? 0.5 : 0.7
+                        font.family: root.fontFamily
+                        font.pixelSize: Style.font.caption
+                        elide: Text.ElideRight
+                        width: Math.min(implicitWidth, parent.width / 2)
+                      }
+
+                      MouseArea {
+                        id: suggestionHover
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: root.chooseHotkeySuggestion(index)
+                      }
+                    }
+                  }
+                }
+
+                // Footer: legend + buttons.
+                Item {
+                  width: parent.width
+                  height: Style.spacing.controlHeight
+
+                  Text {
+                    textFormat: Text.PlainText
+                    anchors.left: parent.left
+                    anchors.right: hotkeyButtons.left
+                    anchors.rightMargin: Style.space(10)
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "Enter use it  ·  Esc cancel"
+                    color: root.foreground
+                    opacity: 0.45
+                    font.family: root.fontFamily
+                    font.pixelSize: Style.font.caption
+                    elide: Text.ElideRight
+                  }
+
+                  Row {
+                    id: hotkeyButtons
+                    anchors.right: parent.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    spacing: Style.spacing.controlGap
+
+                    Button {
+                      text: Local.HotkeyService.enabled ? "Turn off" : "Turn on"
+                      bordered: true
+                      foreground: root.foreground
+                      accent: root.selectedText
+                      fontFamily: root.fontFamily
+                      onClicked: root.toggleHotkeyEnabled()
+                    }
+
+                    Button {
+                      text: "Cancel"
+                      bordered: true
+                      foreground: root.foreground
+                      accent: root.selectedText
+                      fontFamily: root.fontFamily
+                      onClicked: root.closeHotkey()
+                    }
+
+                    Button {
+                      text: "Use this key"
+                      bordered: true
+                      selected: true
+                      foreground: root.foreground
+                      accent: root.selectedText
+                      fontFamily: root.fontFamily
+                      onClicked: root.applyHotkey()
+                    }
+                  }
                 }
               }
             }
