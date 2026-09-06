@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# CLI wrapper for the bookmarkEverything plugin (io.github.decadentsavant.bookmark-everything).
+# CLI wrapper for the Bookmark Everything plugin (io.github.decadentsavant.bookmark-everything).
 #
 #   bkmke                       toggle the launcher (configured mode)
 #   bkmke hints | search        open directly in that mode

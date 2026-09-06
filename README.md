@@ -1,4 +1,4 @@
-# bookmarkEverything
+# Bookmark Everything
 
 A keyboard-first launcher for [Omarchy](https://omarchy.org) that opens
 bookmarked URLs, files, folders, and applications from a single overlay.
@@ -84,6 +84,23 @@ To reach the launcher from the Omarchy menu as well, add these rows to
 "bookmarks.apps": {"icon":"󰀻","label":"Add applications","action":"omarchy-shell shell call io.github.decadentsavant.bookmark-everything pickApplications ''"},
 "bookmarks.clipboard": {"icon":"󰅌","label":"Add from clipboard","action":"omarchy-shell shell call io.github.decadentsavant.bookmark-everything addFromClipboard ''"}
 ```
+
+## Remove
+
+```bash
+omarchy plugin remove io.github.decadentsavant.bookmark-everything
+```
+
+That disables the plugin and deletes its folder. Your bookmarks are kept on
+purpose. To remove everything the plugin touched:
+
+```bash
+rm ~/.config/omarchy/bookmark-everything.json ~/.config/omarchy/bookmark-everything.json.bak-*
+rm ~/.local/bin/bkmke   # only if you linked the CLI
+```
+
+Then delete the `o.bind` line from `~/.config/hypr/bindings.lua` and any
+`bookmarks.*` rows you added to `omarchy-menu.jsonc`.
 
 ## Using it
 

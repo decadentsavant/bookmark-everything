@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Gathers "places" for the bookmarkEverything Places picker.
+# Gathers "places" for the Bookmark Everything Places picker.
 # Output lines: kind <TAB> source <TAB> path <TAB> label
 # Sources (each optional, skipped when absent):
 #   sidebar  ~/.config/gtk-3.0/bookmarks         (Files sidebar bookmarks)

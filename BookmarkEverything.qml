@@ -6,7 +6,7 @@ import qs.Commons
 import qs.Ui
 import "BookmarkModel.js" as Model
 
-// bookmarkEverything — keyboard-first launcher for URLs, files, folders, and
+// Bookmark Everything — keyboard-first launcher for URLs, files, folders, and
 // applications. Summoned through the shell:
 //   omarchy-shell shell toggle io.github.decadentsavant.bookmark-everything '{}'
 //   omarchy-shell shell summon io.github.decadentsavant.bookmark-everything '{"mode":"search"}'
@@ -315,7 +315,7 @@ Item {
     var list = [
       { type: "folder", name: "Home folder", target: "~/", tags: ["sample"], notes: "Your home folder. Edit or delete these samples freely." },
       { type: "folder", name: "Downloads folder", target: "~/Downloads", tags: ["sample"], notes: "" },
-      { type: "url", name: "bookmarkEverything on GitHub", target: "https://github.com/decadentsavant/bookmark-everything", tags: ["sample", "docs"], notes: "Source, issues, and updates for this plugin" },
+      { type: "url", name: "Bookmark Everything on GitHub", target: "https://github.com/decadentsavant/bookmark-everything", tags: ["sample", "docs"], notes: "Source, issues, and updates for this plugin" },
       { type: "url", name: "decadentsavant on X", target: "https://x.com/decadentsavant", tags: ["sample"], notes: "The plugin's author" }
     ]
     for (var i = 0; i < root.seedApps.length; i++) {
@@ -584,7 +584,7 @@ Item {
       // a hand-written target like "nautilus" still launches org.gnome.Nautilus.
       var de = root.lookupApp(e.target)
       if (!de) {
-        root.notify("bookmarkEverything", "No installed application matches “" + e.target + "”")
+        root.notify("Bookmark Everything", "No installed application matches “" + e.target + "”")
         return
       }
       var appId = String(de.id || e.target)
@@ -597,7 +597,7 @@ Item {
     }
     var target = e.type === "url" ? e.target : Model.expandPath(e.target, root.home)
     if (e.type !== "url" && root.missingPaths[target] === true) {
-      root.notify("bookmarkEverything", root.missingLabel(e) + ": " + Model.compactPath(target, root.home))
+      root.notify("Bookmark Everything", root.missingLabel(e) + ": " + Model.compactPath(target, root.home))
       return
     }
     // uwsm-app puts the opened application in its own scope instead of
