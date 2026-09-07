@@ -3,6 +3,8 @@
 A keyboard-first launcher for [Omarchy](https://omarchy.org) that opens
 bookmarked URLs, files, folders, and applications from a single overlay.
 
+![Bookmark Everything: the launcher in hint mode, its bar icon, and the Options screen](preview.webp)
+
 Press a hotkey, type a two-letter code, and the bookmark opens. Or press `/`
 and search. Everything is stored in one plain JSON file on your machine. No
 account, no cloud, no network access.
@@ -257,6 +259,13 @@ omarchy-shell shell call io.github.decadentsavant.bookmark-everything setIconInB
 | `help.html` | The built-in help page |
 | `bkmke` | Command-line wrapper around the shell IPC |
 | `test/model.test.js`, `test/hotkey.test.js` | Unit tests for the two models, runnable with `node` |
+| `dev/listing.sh`, `dev/listing/` | Renders `preview.webp`, the marketplace card, from real screenshots |
+
+`preview.webp` is a 2000×1000 card rendered from `dev/listing/listing.html`
+with headless Chromium and ImageMagick. It embeds unedited screenshots of the
+launcher, the Options screen, and the icon in the bar (`dev/listing/*.png`);
+the title, feature list, and colours are presentation artwork. Retake the
+screenshots and run `./dev/listing.sh` when the UI changes.
 
 The models have no Qt dependencies, so their tests run anywhere:
 

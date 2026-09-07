@@ -1,0 +1,122 @@
+<title>Bookmark Everything listing</title>
+<style>
+  :root {
+    --bg0: #0a0e1d; --bg1: #171f3d; --card: rgba(22, 29, 58, .78); --line: rgba(255, 200, 87, .18);
+    --ink: #f4f2ea; --muted: #a9b1cc; --amber: #ffc857; --amber2: #ffa62b; --mint: #7ee8c0; --sky: #8ec5ff;
+  }
+  * { box-sizing: border-box; margin: 0 }
+  body { width: 2000px; height: 1000px; overflow: hidden; position: relative; color: var(--ink);
+    font-family: "Noto Sans", "Liberation Sans", sans-serif;
+    background:
+      radial-gradient(900px 700px at 76% 42%, rgba(255,200,87,.16), transparent 60%),
+      radial-gradient(700px 500px at 8% 100%, rgba(126,232,192,.12), transparent 60%),
+      linear-gradient(135deg, var(--bg0), var(--bg1) 60%, #0d1328); }
+  .mono { font-family: "JetBrainsMono Nerd Font", "JetBrainsMono NF", monospace }
+
+  /* a big faint bookmark behind the right column, and a dot grid */
+  .mark { position: absolute; left: 1330px; top: 250px; font-size: 900px; line-height: 1; color: rgba(255,200,87,.055);
+    font-family: "JetBrainsMono Nerd Font", "JetBrainsMono NF", monospace; transform: rotate(-12deg) }
+  .dots { position: absolute; left: 900px; top: 770px; width: 120px; height: 120px;
+    background-image: radial-gradient(rgba(255,200,87,.35) 2px, transparent 2.5px); background-size: 20px 20px; }
+
+  .left { position: absolute; left: 90px; top: 64px; width: 820px }
+  .brand { display: flex; align-items: center; gap: 30px }
+  .tile { width: 140px; height: 140px; border-radius: 32px; display: grid; place-items: center; flex: none;
+    background: linear-gradient(160deg, var(--amber), var(--amber2)); color: #1c1200; font-size: 92px;
+    box-shadow: 0 20px 60px rgba(255,200,87,.28), inset 0 -6px 0 rgba(0,0,0,.12); }
+  .tile .g { font-family: "JetBrainsMono Nerd Font", "JetBrainsMono NF", monospace; transform: translateY(2px) }
+  h1 { font-size: 72px; letter-spacing: -.02em; line-height: .95; font-weight: 800;
+    background: linear-gradient(90deg, var(--ink), var(--amber)); -webkit-background-clip: text; color: transparent }
+  .tag { font-size: 27px; color: var(--amber); margin-top: 10px; font-weight: 500 }
+
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 22px; backdrop-filter: blur(6px) }
+  .blurb { margin-top: 26px; padding: 20px 28px; font-size: 24px; line-height: 1.38; color: var(--ink) }
+  .blurb b { color: var(--amber); font-weight: 700 }
+  .blurb i { color: var(--mint); font-style: normal; font-weight: 700 }
+  .blurb .k { font-family: "JetBrainsMono Nerd Font", "JetBrainsMono NF", monospace; color: var(--ink); background: rgba(255,255,255,.08); padding: 0 8px; border-radius: 8px }
+
+  .head { display: flex; align-items: center; gap: 20px; margin: 24px 0 14px }
+  .head .ic { width: 50px; height: 50px; border-radius: 14px; border: 2px solid rgba(255,200,87,.5); display: grid; place-items: center; font-size: 26px }
+  .head span { font-size: 30px; font-weight: 700; color: var(--amber) }
+  .feat { display: grid; grid-template-columns: 66px 1fr; column-gap: 24px; row-gap: 12px; align-items: center }
+  .feat .ic { width: 66px; height: 66px; border-radius: 50%; display: grid; place-items: center; font-size: 30px;
+    background: linear-gradient(160deg, #2b3566, #1c2448); border: 1px solid rgba(255,200,87,.25); box-shadow: 0 10px 30px rgba(0,0,0,.35) }
+  .feat .ic.t { font-family: "JetBrainsMono Nerd Font", "JetBrainsMono NF", monospace; font-size: 26px; font-weight: 700; color: var(--amber) }
+  .feat h3 { font-size: 25px; font-weight: 700 }
+  .feat p { font-size: 18px; color: var(--muted); margin-top: 2px }
+
+  .gh { margin-top: 22px; padding: 14px 26px; display: flex; align-items: center; gap: 24px }
+  .gh svg { width: 50px; height: 50px; fill: var(--ink) }
+  .gh h4 { font-size: 26px; font-weight: 700 }
+  .gh p { font-size: 22px; color: var(--amber); margin-top: 2px }
+
+  .right { position: absolute; left: 1010px; top: 64px; width: 900px }
+  .strip { position: relative; width: 640px; overflow: hidden; border: 2px solid rgba(255,200,87,.45);
+    box-shadow: 0 0 0 8px rgba(255,200,87,.06), 0 20px 60px rgba(0,0,0,.5) }
+  .strip img { display: block; width: 640px; height: auto }
+  .you { position: absolute; left: 357px; top: 4px; width: 46px; height: 46px; border-radius: 50%; border: 3px solid var(--amber); box-shadow: 0 0 0 4px rgba(10,14,29,.6), 0 0 24px var(--amber) }
+  .you-label { position: absolute; left: 196px; top: 14px; color: var(--amber); font-size: 19px; font-weight: 700; letter-spacing: .04em; text-shadow: 0 2px 8px rgba(0,0,0,.8) }
+  .shot { margin-top: 16px; width: 640px; padding: 0; overflow: hidden; border: 2px solid rgba(255,200,87,.45);
+    box-shadow: 0 0 0 10px rgba(255,200,87,.06), 0 40px 120px rgba(0,0,0,.6), 0 0 90px rgba(255,200,87,.2) }
+  .shot img { display: block; width: 640px; height: auto }
+  .cap { width: 640px; margin-top: 14px; padding: 0 8px; color: var(--muted); font-size: 19px; letter-spacing: .08em; text-transform: uppercase }
+  .cap b { color: var(--amber); font-weight: 600 }
+
+  .opts { position: absolute; left: 430px; top: 462px; width: 470px; overflow: hidden; border-radius: 18px;
+    border: 2px solid rgba(255,200,87,.55); box-shadow: 0 30px 80px rgba(0,0,0,.6), 0 0 60px rgba(255,200,87,.18); transform: rotate(2deg) }
+  .opts img { display: block; width: 470px; height: auto }
+  .opts-label { position: absolute; left: 420px; top: 430px; color: var(--amber); font-size: 19px; font-weight: 700; letter-spacing: .04em; text-shadow: 0 2px 8px rgba(0,0,0,.8) }
+
+  .foot { position: absolute; left: 1010px; bottom: 44px; width: 900px; display: flex; gap: 12px; flex-wrap: wrap }
+  .pill { padding: 11px 20px; border-radius: 999px; border: 1px solid rgba(255,200,87,.3); background: rgba(255,200,87,.08); font-size: 20px; color: var(--ink) }
+  .pill b { color: var(--amber); font-weight: 600 }
+  .pill.cmd { font-size: 17px; padding: 11px 18px; white-space: nowrap }
+</style>
+
+<div class="mark">&#xF00C0;</div>
+<div class="dots"></div>
+
+<div class="left">
+  <div class="brand">
+    <div class="tile"><span class="g">&#xF00C0;</span></div>
+    <div>
+      <h1>BOOKMARK<br>EVERYTHING</h1>
+      <div class="tag">Two letters, and anything opens.</div>
+    </div>
+  </div>
+
+  <div class="card blurb">
+    <b>Bookmark Everything</b> is a keyboard-first launcher for Omarchy. Press <span class="k">Super+B</span>,
+    type two letters, and a URL, file, folder, or app <i>opens</i>. One JSON file, no accounts, no network.
+  </div>
+
+  <div class="head"><div class="ic">★</div><span>What it does</span></div>
+  <div class="feat">
+    <div class="ic t">aa</div><div><h3>Two-letter hints</h3><p>Every bookmark gets a code that never changes under you. Type it, it opens.</p></div>
+    <div class="ic">🔍</div><div><h3>Fuzzy search</h3><p>Press / and type. Names, tags, notes, URLs, paths, application names.</p></div>
+    <div class="ic">🗂️</div><div><h3>URLs, files, folders, apps</h3><p>Each opens the way Omarchy would. Paste a target; the type is detected.</p></div>
+    <div class="ic">⚡</div><div><h3>Works the moment it is installed</h3><p>Super+B and a bar icon, registered by the plugin. Nothing to add to bindings.lua.</p></div>
+  </div>
+
+  <div class="card gh">
+    <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+    <div><h4>Open source, MIT licensed</h4><p>github.com/decadentsavant/bookmark-everything</p></div>
+  </div>
+</div>
+
+<div class="right">
+  <div class="card strip"><img src="bar.png" alt=""><div class="you"></div><div class="you-label">that’s the icon →</div></div>
+  <div class="card shot"><img src="launcher.png" alt=""></div>
+  <div class="cap">Actual launcher · <b>hint mode</b></div>
+
+  <div class="opts-label">right-click the icon ↓</div>
+  <div class="opts"><img src="options.png" alt=""></div>
+</div>
+
+<div class="foot">
+  <div class="pill"><b>Super+B</b> open</div>
+  <div class="pill"><b>aa</b>…<b>zy</b> two-letter codes</div>
+  <div class="pill"><b>/</b> search</div>
+  <div class="pill"><b>Right-click</b> icon: options</div>
+  <div class="pill mono cmd">omarchy plugin add https://github.com/decadentsavant/bookmark-everything.git --enable</div>
+</div>
