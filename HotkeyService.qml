@@ -76,6 +76,16 @@ Scope {
   function reconcile() {
     if (!settingsLoaded) return
     var script = ""
+    // The singleton outlives the overlay and the bar widget, and a watcher
+    // (settings file, Hyprland reload) can still wake it after the plugin is
+    // disabled or removed. With nothing retaining it, only ever let go.
+    if (retained <= 0) {
+      script = HK.releaseScript(binds)
+      active = ""
+      preferredOwner = ""
+      if (script) Quickshell.execDetached(["hyprctl", "eval", script])
+      return
+    }
     if (!enabled) {
       script = HK.releaseScript(binds)
       active = ""
