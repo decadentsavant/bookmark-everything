@@ -7,152 +7,124 @@
 <style>
   :root { color-scheme: light dark; --fg: #1f2328; --bg: #ffffff; --muted: #656d76; --line: #d0d7de; --accent: #0969da; --code: #f6f8fa; }
   @media (prefers-color-scheme: dark) { :root { --fg: #e6edf3; --bg: #0d1117; --muted: #8b949e; --line: #30363d; --accent: #58a6ff; --code: #161b22; } }
-  body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-  main { max-width: 760px; margin: 0 auto; padding: 40px 24px 80px; }
-  h1 { font-size: 30px; margin: 0 0 4px; }
-  h2 { font-size: 20px; margin: 36px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 720px; margin: 0 auto; padding: 40px 24px 80px; }
+  h1 { font-size: 28px; margin: 0 0 4px; }
+  h2 { font-size: 19px; margin: 32px 0 8px; padding-bottom: 5px; border-bottom: 1px solid var(--line); }
+  p { margin: 8px 0; }
   p.lead { color: var(--muted); margin-top: 0; }
-  kbd { display: inline-block; padding: 1px 7px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 6px; background: var(--code); font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; }
+  kbd { display: inline-block; padding: 0 6px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; background: var(--code); font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; }
   code, pre { font: 13.5px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--code); border-radius: 6px; }
   code { padding: 1px 5px; }
-  pre { padding: 12px 14px; overflow-x: auto; }
-  table { border-collapse: collapse; width: 100%; margin: 8px 0 4px; }
-  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
-  th { color: var(--muted); font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
-  td:first-child { white-space: nowrap; }
+  pre { padding: 10px 14px; overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; margin: 6px 0 4px; }
+  td { text-align: left; padding: 5px 10px 5px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  td:first-child { white-space: nowrap; width: 1%; padding-right: 18px; }
+  ul { padding-left: 20px; margin: 6px 0; }
+  li { margin: 3px 0; }
   a { color: var(--accent); }
-  .tip { border-left: 3px solid var(--accent); padding: 6px 14px; margin: 14px 0; background: var(--code); border-radius: 0 6px 6px 0; }
 </style>
 </head>
 <body>
 <main>
 <h1>Bookmark Everything</h1>
-<p class="lead">A keyboard-first launcher for bookmarked URLs, files, folders, and applications. Local only. No accounts, no network.</p>
+<p class="lead">Vimium-style hints for URLs, files, folders, and apps. Type two letters, it opens.</p>
 
-<h2>Open the launcher</h2>
+<h2>Open</h2>
 <table>
-<tr><th>Key</th><th>What it does</th></tr>
-<tr><td><kbd>Super</kbd> + <kbd>B</kbd></td><td>Toggle the launcher in the configured mode (Hints by default). If that key was already taken when the plugin loaded, another one was chosen; see <a href="#hotkey">Hotkey</a>.</td></tr>
-<tr><td>Bookmark icon in the bar</td><td>Click to open. Hover to see the current hotkey. Right-click for options.</td></tr>
-<tr><td><code>bkmke</code></td><td>The same from a terminal. Try <code>bkmke help</code> for the other subcommands.</td></tr>
+<tr><td><kbd>Super</kbd>+<kbd>B</kbd></td><td>Open or close the launcher. (Another key if that one was taken; hover the bar icon to see which.)</td></tr>
+<tr><td>Bar icon</td><td>Click: open. Right-click: options.</td></tr>
+<tr><td><code>bkmke</code></td><td>Same, from a terminal. <code>bkmke help</code> lists subcommands.</td></tr>
 </table>
 
-<h2 id="hotkey">Hotkey</h2>
-<p>The plugin registers its key by itself when it loads, so nothing needs editing. It prefers <kbd>Super</kbd> + <kbd>B</kbd>. If something on your machine already uses that, it takes the first free key from a short list (<kbd>Super</kbd> + <kbd>Alt</kbd> + <kbd>B</kbd> first) and tells you once with a notification.</p>
+<h2>Hints</h2>
+<p>Each bookmark shows a two-letter code on the left. Type it and the bookmark opens. Typing the first letter narrows the list.</p>
+<p>Codes are assigned automatically (<code>aa</code>, <code>ab</code>, …). To pick your own, edit the bookmark and type it in the <b>Hint</b> field: <code>gh</code> for GitHub, <code>no</code> for notes. <code>zz</code> always opens this page.</p>
 <table>
-<tr><th>To…</th><th>Do this</th></tr>
-<tr><td>See the current key</td><td>Hover the bookmark icon in the bar. Omarchy's own keybindings menu (<kbd>Super</kbd> + <kbd>K</kbd>) lists it as “Bookmark Everything”.</td></tr>
-<tr><td>Change it</td><td>Right-click the bar icon, or click the gear at the bottom of the launcher (<kbd>Ctrl</kbd> + <kbd>K</kbd>). The Options screen shows what opens the launcher now. Type a combination such as <code>SUPER + ALT + B</code> and press <kbd>Enter</kbd>. A key something else already uses is refused, with the reason.</td></tr>
-<tr><td>Turn the built-in key off</td><td>The <em>Built-in hotkey</em> toggle on the Options screen, or <code>bkmke hotkey off</code>. The screen then shows the exact line to add to <code>~/.config/hypr/bindings.lua</code> if you want to bind the launcher yourself.</td></tr>
-<tr><td>Hide the icon in the bar</td><td>The <em>Icon in the bar</em> toggle on the Options screen, or <code>bkmke icon off</code>. The launcher stays loaded and the hotkey keeps working; remember it, since it is then the only way in.</td></tr>
-<tr><td>Use a key that is already taken</td><td>Free it first. For an Omarchy default or one of your own, add <code>hl.unbind("SUPER + B")</code> (with the key in question) to <code>~/.config/hypr/bindings.lua</code>; for another plugin, change that plugin's key. Then choose it here.</td></tr>
-</table>
-<p>Why type instead of press: Hyprland acts on a bound combination before the launcher could see it, so “press the keys you want” would launch whatever holds them.</p>
-<div class="tip">The key lives in the running compositor, not in a file under <code>~/.config/hypr</code>. It is put back after <code>hyprctl reload</code> and removed when the plugin is disabled or removed. If you already bound the launcher yourself in <code>bindings.lua</code>, the plugin sees the key in use and leaves it to you.</div>
-
-<h2>Hint mode</h2>
-<p>Every bookmark has a stable two-letter code shown in the left column. Type the two letters and the bookmark opens immediately. Typing the first letter narrows the list to matching codes.</p>
-<table>
-<tr><th>Key</th><th>Action</th></tr>
-<tr><td><kbd>a</kbd>…<kbd>z</kbd> ×2</td><td>Launch the bookmark with that hint code</td></tr>
-<tr><td><kbd>zz</kbd> or <kbd>?</kbd></td><td>Open this help page (zz is reserved for it)</td></tr>
-<tr><td><kbd>/</kbd> or <kbd>Tab</kbd></td><td>Switch to Search mode</td></tr>
-<tr><td><kbd>↑</kbd> <kbd>↓</kbd> then <kbd>Enter</kbd></td><td>Move the highlight and launch it</td></tr>
-<tr><td><kbd>+</kbd> or <kbd>Ctrl</kbd>+<kbd>N</kbd></td><td>Add a bookmark</td></tr>
-<tr><td><kbd>Ctrl</kbd>+<kbd>V</kbd></td><td>Add whatever URL or path is on the clipboard</td></tr>
-<tr><td><kbd>Ctrl</kbd>+<kbd>A</kbd></td><td>Add installed applications in bulk (see below)</td></tr>
+<tr><td><kbd>a</kbd>–<kbd>z</kbd> twice</td><td>Open that bookmark</td></tr>
+<tr><td><kbd>/</kbd> or <kbd>Tab</kbd></td><td>Search</td></tr>
+<tr><td><kbd>↑</kbd> <kbd>↓</kbd> <kbd>Enter</kbd></td><td>Highlight and open</td></tr>
+<tr><td><kbd>+</kbd> or <kbd>Ctrl</kbd>+<kbd>N</kbd></td><td>Add</td></tr>
+<tr><td><kbd>Ctrl</kbd>+<kbd>V</kbd></td><td>Add the URL or path on the clipboard</td></tr>
+<tr><td><kbd>Ctrl</kbd>+<kbd>A</kbd></td><td>Add apps in bulk</td></tr>
 <tr><td><kbd>Ctrl</kbd>+<kbd>E</kbd></td><td>Edit the highlighted bookmark</td></tr>
-<tr><td><kbd>Delete</kbd>, <kbd>Backspace</kbd>, or <kbd>Ctrl</kbd>+<kbd>D</kbd></td><td>Delete the highlighted bookmark (asks first). Backspace first erases a half-typed code, and in Search mode it only edits the search text.</td></tr>
-<tr><td><kbd>Ctrl</kbd>+<kbd>I</kbd> / <kbd>Ctrl</kbd>+<kbd>O</kbd></td><td>Import from / export to a JSON file</td></tr>
+<tr><td><kbd>Delete</kbd>, <kbd>Backspace</kbd>, <kbd>Ctrl</kbd>+<kbd>D</kbd></td><td>Delete it (asks first)</td></tr>
+<tr><td><kbd>Ctrl</kbd>+<kbd>I</kbd> / <kbd>Ctrl</kbd>+<kbd>O</kbd></td><td>Import / export</td></tr>
+<tr><td><kbd>Ctrl</kbd>+<kbd>K</kbd> or the gear</td><td>Options</td></tr>
+<tr><td><kbd>?</kbd> or <kbd>zz</kbd></td><td>This page</td></tr>
 <tr><td><kbd>Esc</kbd></td><td>Clear a half-typed code, then close</td></tr>
 </table>
 
-<h2>Search mode</h2>
-<p>Type to filter. Matching is fuzzy and runs over the name, tags, notes, URL or path, and the application name. All the shortcuts above still work here, except that letters go into the search box.</p>
+<h2>Search</h2>
+<p>Press <kbd>/</kbd> and type. Matches names, tags, notes, URLs, paths, and app names. Letters go to the search box; the shortcuts above still work.</p>
 <table>
-<tr><th>Key</th><th>Action</th></tr>
-<tr><td><kbd>↑</kbd> <kbd>↓</kbd> then <kbd>Enter</kbd></td><td>Choose and launch</td></tr>
-<tr><td><kbd>Ctrl</kbd>+<kbd>Backspace</kbd> / <kbd>Ctrl</kbd>+<kbd>U</kbd></td><td>Delete the last word / clear the search</td></tr>
-<tr><td><kbd>Esc</kbd></td><td>Clear the search, then go back to Hints (or close, if the launcher opened in Search mode)</td></tr>
+<tr><td><kbd>↑</kbd> <kbd>↓</kbd> <kbd>Enter</kbd></td><td>Choose and open</td></tr>
+<tr><td><kbd>Ctrl</kbd>+<kbd>Backspace</kbd> / <kbd>Ctrl</kbd>+<kbd>U</kbd></td><td>Delete a word / clear</td></tr>
+<tr><td><kbd>Esc</kbd></td><td>Clear, then back to Hints</td></tr>
 </table>
 
 <h2>Mouse</h2>
 <ul>
-<li>Click a row to launch it. Right-click, or click the <strong>⋯</strong> on the highlighted row, for Open / Edit / Delete.</li>
-<li>The <strong>+</strong> in the header adds a bookmark. The <strong>HINTS</strong> / <strong>SEARCH</strong> badge switches mode.</li>
-<li>Click outside the card to close.</li>
+<li>Click a row to open it. Right-click, or the <b>⋯</b> on the highlighted row: Open / Edit / Delete.</li>
+<li><b>+</b> adds. <b>HINTS</b> / <b>SEARCH</b> switches mode. The gear opens Options. Click outside to close.</li>
 </ul>
 
-<h2>Adding and editing</h2>
-<p>The Add dialog has Type (URL, File or folder, Application), Name, Target, Tags, Notes, and Hint fields. <kbd>Tab</kbd> moves between fields, <kbd>Enter</kbd> saves, <kbd>Esc</kbd> cancels.</p>
+<h2>Add and edit</h2>
+<p>Fields: Type, Name, Target, Tags, Notes, Hint. <kbd>Tab</kbd> next field, <kbd>Enter</kbd> save, <kbd>Esc</kbd> cancel.</p>
 <ul>
-<li>Pasting a URL into Target selects <em>URL</em> automatically; typing a path selects <em>File or folder</em>. Whether it is saved as a file or a folder is decided when you save, from what is actually on disk.</li>
-<li>For <em>File or folder</em>, the Target field works like a shell: press <kbd>Tab</kbd> in the empty field to start browsing from your home folder, then <kbd>Tab</kbd> extends to the common prefix and cycles through matches; <kbd>↑</kbd> <kbd>↓</kbd> browse the list and <kbd>Enter</kbd> accepts (a folder keeps descending). <kbd>Ctrl</kbd>+<kbd>Space</kbd>, or the <strong>Places</strong> button, opens a picker of folders and files you already use: your Files sidebar bookmarks, zoxide's most-visited folders, and recent files. Nothing extra to install; sources you don't have are skipped.</li>
-<li>For <em>Application</em>, the Target field becomes a picker: press <kbd>Enter</kbd> or start typing to search installed applications.</li>
-<li>Name is optional. It defaults to the site host, the file name, or the application name.</li>
-<li>Hint is auto-assigned to the next free code. If you type a code another bookmark already uses, the form says <em>Swaps with …</em> and, on save, the two bookmarks trade codes: the other one takes the code this entry had (or would have been given). The <strong>󰑐</strong> button next to the field, or <kbd>Ctrl</kbd>+<kbd>R</kbd>, restores the default code.</li>
-<li>Saving checks that the target exists (paths), looks like a URL, or matches an installed application.</li>
+<li><b>Target:</b> paste a URL or type a path; the type is detected. File or folder is decided from what is on disk.</li>
+<li><b>Paths complete like a shell:</b> <kbd>Tab</kbd> in the empty field browses from home; <kbd>Tab</kbd> again extends or cycles; <kbd>↑</kbd> <kbd>↓</kbd> <kbd>Enter</kbd> pick. <kbd>Ctrl</kbd>+<kbd>Space</kbd> or <b>Places</b> lists folders and files you already use (file-manager sidebar, zoxide, recent files).</li>
+<li><b>Application:</b> the Target field becomes a picker; type to search installed apps.</li>
+<li><b>Name</b> is optional: defaults to the site, file, or app name.</li>
+<li><b>Hint:</b> pre-filled with the next free code. Type your own two letters instead. If another bookmark has that code, the two swap. The reset button beside the field, or <kbd>Ctrl</kbd>+<kbd>R</kbd>, restores the default.</li>
 </ul>
 
-<h2>Adding many applications at once</h2>
-<p>Press <kbd>Ctrl</kbd>+<kbd>A</kbd> in the launcher (or run <code>bkmke apps</code>) to open the application picker in bulk mode. The same picker appears from the Add dialog when the type is <em>Application</em>.</p>
+<h2>Add apps in bulk</h2>
+<p><kbd>Ctrl</kbd>+<kbd>A</kbd> in the launcher (or <code>bkmke apps</code>).</p>
 <table>
-<tr><th>Key</th><th>Action</th></tr>
-<tr><td><kbd>Space</kbd> or click</td><td>Select or deselect the highlighted application</td></tr>
-<tr><td><kbd>Ctrl</kbd>+<kbd>A</kbd></td><td>Select every application currently listed. Type a filter first to narrow the list, or leave it empty to select all installed applications.</td></tr>
-<tr><td><kbd>Enter</kbd></td><td>Add every selected application as its own bookmark (name, icon, and notes come from the desktop entry, tagged <code>app</code>). Applications already bookmarked are skipped.</td></tr>
-<tr><td><kbd>Esc</kbd></td><td>Clear the selection, then the filter, then leave the picker</td></tr>
+<tr><td><kbd>Space</kbd> or click</td><td>Select / deselect</td></tr>
+<tr><td><kbd>Ctrl</kbd>+<kbd>A</kbd></td><td>Select everything listed (type a filter first to narrow it)</td></tr>
+<tr><td><kbd>Enter</kbd></td><td>Add the selected apps. Ones already bookmarked are skipped.</td></tr>
+<tr><td><kbd>Esc</kbd></td><td>Clear selection, then filter, then leave</td></tr>
 </table>
 
-<h2>Bookmark types</h2>
+<h2>Types</h2>
 <table>
-<tr><th>Type</th><th>Target</th><th>Opens with</th></tr>
-<tr><td>URL</td><td><code>https://…</code> (bare domains get <code>https://</code>)</td><td>Default browser via <code>xdg-open</code></td></tr>
-<tr><td>File</td><td>Absolute path, <code>~/</code> allowed</td><td>Default application via <code>xdg-open</code></td></tr>
-<tr><td>Folder</td><td>Absolute path, <code>~/</code> allowed</td><td>File manager via <code>xdg-open</code></td></tr>
-<tr><td>Application</td><td>Desktop entry id, e.g. <code>firefox</code></td><td>Launched the same way as the Omarchy app menu</td></tr>
+<tr><td>URL</td><td><code>https://…</code> (bare domains get <code>https://</code>). Opens in the default browser.</td></tr>
+<tr><td>File</td><td>Path, <code>~/</code> allowed. Opens in its default app.</td></tr>
+<tr><td>Folder</td><td>Path, <code>~/</code> allowed. Opens in the file manager.</td></tr>
+<tr><td>Application</td><td>Desktop entry id, e.g. <code>firefox</code>. Launches like the app menu.</td></tr>
 </table>
+<p>A missing file, folder, or app is shown struck through; opening it sends a notification. Restore it and the mark clears.</p>
 
-<h2>Missing targets</h2>
-<p>A bookmark whose application is not installed, or whose file or folder no longer exists, is shown struck through with a <em>not installed</em> / <em>file missing</em> / <em>folder missing</em> note. Launching it sends a notification instead of failing silently. The check runs every time the launcher opens, so reinstalling the app or restoring the file clears the flag. Imports also report any applications they could not match.</p>
-
-<h2>Where things live</h2>
-<pre>~/.config/omarchy/bookmark-everything.json              your bookmarks (plain JSON, edit freely)
-~/.config/omarchy/bookmark-everything.json.bak-&lt;time&gt;  automatic backup taken before each import
-~/.config/omarchy/plugins/io.github.decadentsavant.bookmark-everything/      the plugin itself (this page included)
-~/.config/omarchy/shell.json                  open mode, see below
-~/.config/omarchy/bookmark-everything.settings.json  your hotkey choice; created the first time you change it</pre>
-<p>An entry looks like this. The file reloads automatically when you edit it by hand; missing hints or ids are filled in.</p>
-<pre>{
-  "id": "pacman-cheatsheet",
-  "hint": "aa",
-  "type": "file",
-  "name": "Pacman &amp; Yay Cheatsheet",
-  "target": "~/Documents/pacman-yay-cheatsheet.html",
-  "tags": ["linux", "arch", "reference"],
-  "notes": "Common package commands"
-}</pre>
-
-<h2>Settings</h2>
-<p>Open mode is set on the plugin's entry in <code>~/.config/omarchy/shell.json</code>:</p>
-<pre>"plugins": [
-  { "id": "io.github.decadentsavant.bookmark-everything", "openMode": "search" }
-]</pre>
-<p>The hotkey is covered <a href="#hotkey">above</a>. To open straight into Search from a second key of your own, pass a mode in the payload from <code>~/.config/hypr/bindings.lua</code>:</p>
-<pre>o.bind("SUPER + SHIFT + B", "Bookmark search", "omarchy-shell shell summon io.github.decadentsavant.bookmark-everything '{\"mode\":\"search\"}'")</pre>
+<h2>Options</h2>
+<p>Right-click the bar icon, or <kbd>Ctrl</kbd>+<kbd>K</kbd> / the gear in the launcher.</p>
+<ul>
+<li><b>Hotkey:</b> type a combination such as <code>SUPER + ALT + B</code> and press <kbd>Enter</kbd>. A key already in use is refused and named. To use it anyway, free it first in <code>~/.config/hypr/bindings.lua</code> (<code>hl.unbind("SUPER + B")</code>).</li>
+<li><b>Built-in hotkey off:</b> the screen shows the line to add to <code>bindings.lua</code> if you want to bind it yourself.</li>
+<li><b>Icon in the bar:</b> hide or show it. The hotkey keeps working either way.</li>
+</ul>
 
 <h2>Import and export</h2>
-<p>Both use the same JSON format as the storage file. Import merges: an entry with the same id replaces the old one, new ids are appended, and any imported hint that collides with an existing one is reassigned so your codes stay stable. A backup is written before the merge.</p>
-<pre>bookmarks export                 # ~/bookmark-everything-export-&lt;date&gt;.json
-bkmke export ~/my.json
-bkmke import ~/my.json
-bkmke add https://example.com
-bkmke add .                  # bookmark the current folder
-bkmke add docs/notes.md      # relative paths are resolved
-bkmke clip                   # add from clipboard
-bkmke apps                   # pick installed applications, multi-select
-bkmke search                 # open in Search mode</pre>
-<div class="tip">There are 675 usable hint codes (aa–zy). Bookmarks beyond that are still reachable in Search mode.</div>
+<p><kbd>Ctrl</kbd>+<kbd>O</kbd> writes all bookmarks to a JSON file. <kbd>Ctrl</kbd>+<kbd>I</kbd> merges one in: same id replaces, new ids are added, clashing hints are reassigned. Your file is backed up first.</p>
+
+<h2>Files</h2>
+<pre>~/.config/omarchy/bookmark-everything.json           bookmarks (plain JSON, edit freely; reloads on save)
+~/.config/omarchy/bookmark-everything.settings.json  hotkey choice, created when you change it</pre>
+<pre>{ "hint": "aa", "type": "url", "name": "Arch Wiki", "target": "https://wiki.archlinux.org", "tags": ["linux"], "notes": "" }</pre>
+<p>To open in Search mode by default, add <code>"openMode": "search"</code> to the plugin's entry under <code>plugins</code> in <code>~/.config/omarchy/shell.json</code>.</p>
+
+<h2>Command line</h2>
+<pre>bkmke                    open or close
+bkmke search             open in Search mode
+bkmke add . | &lt;url|path&gt;  add (relative paths resolve)
+bkmke clip               add from clipboard
+bkmke apps               add apps in bulk
+bkmke import | export    JSON in / out
+bkmke hotkey [combo|off] show, set, or turn off the hotkey
+bkmke icon on|off        show or hide the bar icon
+bkmke options            open Options</pre>
+<p>675 codes (<code>aa</code>–<code>zy</code>) are available; anything beyond that is still reachable by search.</p>
 </main>
 </body>
 </html>

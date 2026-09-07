@@ -1,10 +1,11 @@
 # Bookmark Everything
 
-**Two letters, and anything opens.**
+**Vimium-style hints for your whole desktop.**
 
-A keyboard-first launcher for [Omarchy](https://omarchy.org). Bookmark the
-URLs, files, folders, and apps you reach for every day, then open any of them
-with a two-letter code. No mouse, no menus, no arrow keys.
+A keyboard-first launcher for [Omarchy](https://omarchy.org), inspired by
+[Vimium](https://vimium.github.io/). Bookmark the URLs, files, folders, and
+apps you reach for every day; each gets a two-letter code, auto-assigned or
+chosen by you. Type the code and it opens. No mouse, no menus, no arrow keys.
 
 ![Bookmark Everything: the launcher in hint mode, its bar icon, and the Options screen](preview.webp)
 
@@ -27,14 +28,18 @@ The file manager only knows files. The things you open twenty times a day
 are scattered across all three, and every one of them wants you to type a
 name, scan a list, and click.
 
-Bookmark Everything puts them in one place and gives each a code your hands
-learn in a day. `aa` is your project folder. `gh` is GitHub. `no` is Obsidian.
-Codes never change under you, so muscle memory does the work and the launcher
-is closed before you've finished thinking about it.
+Bookmark Everything puts them in one place and does what Vimium does for
+links: every entry gets a two-letter code. Take the defaults (`aa`, `ab`, …)
+or set your own when you add or edit a bookmark: `gh` for GitHub, `no` for
+Obsidian, `pr` for your project folder. Codes never change under you, so your
+hands learn them in a day and the launcher is closed before you've finished
+thinking about it.
 
 ## How it feels
 
-- **Super+B, `a`, `a`.** The bookmark opens. Two letters, no Enter.
+- **Super+B, `g`, `h`.** GitHub opens. Two letters, no Enter.
+- **Your codes.** Type any two letters into the Hint field when you add or
+  edit a bookmark. Already taken? The two bookmarks swap.
 - **Forgot the code?** Press `/` and type a few letters. Search covers names,
   tags, notes, URLs, paths, and app names, and is instant with a thousand
   entries.
@@ -84,7 +89,7 @@ Everything below is for when you want more than the defaults.
 
 | Key | Hint mode |
 |-----|-----------|
-| `a`…`z` twice | Open the bookmark with that code |
+| `a`…`z` twice | Open the bookmark with that code (set your own in the Hint field when adding or editing) |
 | `/` or Tab | Switch to Search mode |
 | ↑ ↓ then Enter | Move the highlight and open it |
 | `+` or Ctrl+N | Add a bookmark |
