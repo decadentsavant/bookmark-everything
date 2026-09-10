@@ -60,8 +60,12 @@ thinking about it.
   and its Options with a right-click. Don't want the icon? Hide it from
   Options and the hotkey keeps working.
 - **Private by construction.** One JSON file on your machine. No accounts, no
-  cloud, no network access. Edit the file by hand if you like; the launcher
-  reloads it.
+  cloud. Edit the file by hand if you like; the launcher reloads it. The one
+  network call is a check of this repository for new versions, twice a day,
+  which you can turn off.
+- **Stays current.** A notification when a new version is out, an *Update
+  now* button in Options, and an *Update automatically* switch if you would
+  rather not think about it.
 - **Leaves no mess.** Nothing under `~/.config/hypr` is written, ever. Disable
   or remove the plugin and the hotkey is gone with it.
 
@@ -138,8 +142,8 @@ the same call Omarchy's own Lua config uses. It is put back after
   `hl.unbind("SUPER + B")`, then choose it.
 
 Your choices live in `~/.config/omarchy/bookmark-everything.settings.json`
-(`hotkey`, `enabled`, `iconHidden`, `openMode`), created the first time you
-change something in Options.
+(`hotkey`, `enabled`, `iconHidden`, `openMode`, `autoUpdate`), created the
+first time you change something in Options.
 
 </details>
 
@@ -169,6 +173,15 @@ hints reassigned, and a timestamped backup written first.
 To open in Search mode by default, turn on **Open in Search mode** in Options
 (or run `bkmke mode search`).
 
+**Updates.** Omarchy installs plugins as git checkouts but only updates them
+when asked, so the plugin looks for itself: a minute after login and every
+six hours it compares the installed commit with this repository
+(`git ls-remote`, read-only, silent when offline). A new version means one
+notification, and Options shows *Update now*, which runs
+`omarchy plugin update` for you. Turn on **Update automatically** to have new
+versions install themselves instead. To stop the check entirely, add
+`"updateCheck": false` to the settings file.
+
 The first launch seeds a few starter bookmarks (home and Downloads folders,
 this project and Baton on GitHub, the author on X, one installed app), each
 tagged so it stays useful if you keep it. `zz` is always the built-in help.
@@ -196,6 +209,7 @@ bkmke export [file]      write all bookmarks to a JSON file
 bkmke hotkey [combo|off] show the hotkey, set one ("SUPER + ALT + B"), or turn it off
 bkmke icon on|off        show or hide the bookmark icon in the bar
 bkmke mode hints|search  set the mode the launcher opens in
+bkmke update             update the plugin (shows the diff first)
 bkmke options            open the options screen
 ```
 

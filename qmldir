@@ -1,1 +1,2 @@
 singleton HotkeyService 1.0 HotkeyService.qml
+singleton UpdateService 1.0 UpdateService.qml

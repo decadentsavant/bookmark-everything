@@ -102,13 +102,13 @@ assert.equal(H.releaseScript(shared), '')
 assert.equal(H.luaBind('X', 'say "hi" \\ there'), 'o.bind("X", "Bookmark Everything", "say \\"hi\\" \\\\ there")')
 
 // settings
-assert.deepEqual(H.parseSettings(''), { hotkey: 'SUPER + B', enabled: true, noticed: '', iconHidden: false, openMode: 'hints' })
-assert.deepEqual(H.parseSettings('{"hotkey":"super+alt+b","enabled":false,"noticed":"x","iconHidden":true,"openMode":"search"}'), { hotkey: 'SUPER + ALT + B', enabled: false, noticed: 'x', iconHidden: true, openMode: 'search' })
+assert.deepEqual(H.parseSettings(''), { hotkey: 'SUPER + B', enabled: true, noticed: '', iconHidden: false, openMode: 'hints', updateCheck: true, autoUpdate: false, noticedUpdate: '' })
+assert.deepEqual(H.parseSettings('{"hotkey":"super+alt+b","enabled":false,"noticed":"x","iconHidden":true,"openMode":"search","updateCheck":false,"autoUpdate":true,"noticedUpdate":"abc"}'), { hotkey: 'SUPER + ALT + B', enabled: false, noticed: 'x', iconHidden: true, openMode: 'search', updateCheck: false, autoUpdate: true, noticedUpdate: 'abc' })
 assert.equal(H.parseSettings('{"hotkey":"nonsense"}').hotkey, 'SUPER + B')
 assert.equal(H.parseSettings('{"openMode":"bogus","iconHidden":"nope"}').openMode, 'hints')
 assert.equal(H.parseSettings('{"openMode":"bogus","iconHidden":"nope"}').iconHidden, false)
 assert.equal(H.parseSettings(H.serializeSettings({ hotkey: 'SUPER + ALT + B', enabled: true })).hotkey, 'SUPER + ALT + B')
-assert.deepEqual(H.parseSettings(H.serializeSettings({ hotkey: 'SUPER + B', iconHidden: true, openMode: 'search' })), { hotkey: 'SUPER + B', enabled: true, noticed: '', iconHidden: true, openMode: 'search' })
+assert.deepEqual(H.parseSettings(H.serializeSettings({ hotkey: 'SUPER + B', iconHidden: true, openMode: 'search', autoUpdate: true, noticedUpdate: 'abc' })), { hotkey: 'SUPER + B', enabled: true, noticed: '', iconHidden: true, openMode: 'search', updateCheck: true, autoUpdate: true, noticedUpdate: 'abc' })
 
 // summary
 assert.equal(H.summary('SUPER + B', 'SUPER + B', '', true), 'Super+B')

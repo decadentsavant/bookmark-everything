@@ -30,8 +30,8 @@ Item {
   // The hotkey itself is registered by HotkeyService, shared with the bar
   // widget. Retaining it here keeps the bind alive for as long as the overlay
   // is loaded, and releasing it on unload removes the bind.
-  Component.onCompleted: Local.HotkeyService.retain()
-  Component.onDestruction: Local.HotkeyService.release()
+  Component.onCompleted: { Local.HotkeyService.retain(); Local.UpdateService.retain() }
+  Component.onDestruction: { Local.HotkeyService.release(); Local.UpdateService.release() }
 
   property bool opened: false
   property string view: "list"        // list | form | apps | prompt | options
@@ -263,6 +263,19 @@ Item {
     return "ok"
   }
 
+  // IPC: omarchy-shell shell call <id> setAutoUpdate true
+  function setAutoUpdate(value) {
+    Local.HotkeyService.setAutoUpdate(String(value) !== "false")
+    return "ok"
+  }
+
+  // IPC: omarchy-shell shell call <id> updateStatus '' — "Up to date",
+  // "Update available", or "" when no check has succeeded yet.
+  function updateStatus() {
+    Local.UpdateService.check(false)
+    return Local.UpdateService.status
+  }
+
   // IPC: omarchy-shell shell call <id> setHotkey 'SUPER + ALT + B'
   function setHotkey(combo) {
     var err = Local.HotkeyService.setHotkey(String(combo || ""))
@@ -279,7 +292,7 @@ Item {
   function hotkeyStatus() { return Local.HotkeyService.summary }
 
   // IPC: omarchy-shell shell call <id> version '' — confirms which code is loaded.
-  readonly property string codeVersion: "1.2.0"
+  readonly property string codeVersion: "1.3.0"
   function version() { return root.codeVersion }
 
   // IPC: omarchy-shell shell call <id> resolveApp <target> — shows which desktop
@@ -1615,6 +1628,7 @@ Item {
     root.view = "options"
     hotkeyField.text = Local.HotkeyService.hotkey
     Local.HotkeyService.scan()
+    Local.UpdateService.check(false)
     Qt.callLater(function() { hotkeyField.forceActiveFocus(); hotkeyField.selectAll() })
   }
 
@@ -1640,6 +1654,18 @@ Item {
     var show = !root.iconInBar
     Local.HotkeyService.setIconHidden(!show)
     root.showNotice(show ? "Icon shown in the bar" : "Icon hidden from the bar")
+  }
+
+  function toggleAutoUpdate() {
+    var on = !Local.HotkeyService.autoUpdate
+    Local.HotkeyService.setAutoUpdate(on)
+    root.showNotice(on ? "New versions will install themselves" : "You will be told about new versions")
+    if (on && Local.UpdateService.available) Local.UpdateService.update()
+  }
+
+  function runUpdate() {
+    Local.UpdateService.update()
+    root.showNotice("Updating…")
   }
 
   function toggleOpenMode() {
@@ -3224,6 +3250,49 @@ Item {
                   accent: root.selectedText
                   fontFamily: root.fontFamily
                   onClicked: root.toggleOpenMode()
+                }
+
+                // Version and updates.
+                Row {
+                  width: parent.width
+                  spacing: Style.spacing.controlGap
+
+                  Text {
+                    textFormat: Text.PlainText
+                    width: parent.width - (updateButton.visible ? updateButton.width + parent.spacing : 0)
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "Version " + root.codeVersion + (Local.UpdateService.status ? "  ·  " + Local.UpdateService.status : "")
+                    color: root.foreground
+                    opacity: Local.UpdateService.available ? 1 : 0.62
+                    font.family: root.fontFamily
+                    font.pixelSize: Style.font.caption
+                    elide: Text.ElideRight
+                  }
+
+                  Button {
+                    id: updateButton
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible: Local.UpdateService.available && !Local.UpdateService.updating
+                    text: "Update now"
+                    bordered: true
+                    foreground: root.foreground
+                    accent: root.selectedText
+                    fontFamily: root.fontFamily
+                    onClicked: root.runUpdate()
+                  }
+                }
+
+                Toggle {
+                  width: parent.width
+                  label: "Update automatically"
+                  description: Local.HotkeyService.autoUpdate
+                    ? "New versions install themselves within a few hours of release, through omarchy plugin update."
+                    : "Off. You get a notification when a new version is out; update from here or with omarchy plugin update."
+                  checked: Local.HotkeyService.autoUpdate
+                  foreground: root.foreground
+                  accent: root.selectedText
+                  fontFamily: root.fontFamily
+                  onClicked: root.toggleAutoUpdate()
                 }
 
                 // Footer: legend + button.

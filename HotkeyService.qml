@@ -12,8 +12,8 @@ import "HotkeyModel.js" as HK
 // compositor (`hyprctl eval`), comes back after `hyprctl reload`, and is
 // removed when the plugin is disabled or removed. The preferred key and the
 // on/off switch live in a small plugin-owned settings file, which also holds
-// the other plugin options (bar icon shown or hidden, default open mode) so
-// the overlay and the bar widget read one source.
+// the other plugin options (bar icon shown or hidden, default open mode,
+// automatic updates) so the overlay and the bar widget read one source.
 Scope {
   id: service
 
@@ -28,6 +28,9 @@ Scope {
   property string noticed: ""                 // last fallback we notified about
   property bool iconHidden: false             // bar widget collapsed to nothing
   property string openMode: "hints"           // mode the launcher opens in: hints | search
+  property bool updateCheck: true             // look for new versions at all
+  property bool autoUpdate: false             // install new versions unasked
+  property string noticedUpdate: ""           // remote commit already announced
   property string active: ""                  // the key actually registered right now
   property string preferredOwner: ""          // what holds `hotkey` when we fell back
   property var binds: []                      // last parse of `hyprctl binds`
@@ -65,12 +68,15 @@ Scope {
     noticed = s.noticed
     iconHidden = s.iconHidden
     openMode = s.openMode
+    updateCheck = s.updateCheck
+    autoUpdate = s.autoUpdate
+    noticedUpdate = s.noticedUpdate
     settingsLoaded = true
     scan()
   }
 
   function save() {
-    settingsFile.setText(HK.serializeSettings({ hotkey: hotkey, enabled: enabled, noticed: noticed, iconHidden: iconHidden, openMode: openMode }))
+    settingsFile.setText(HK.serializeSettings({ hotkey: hotkey, enabled: enabled, noticed: noticed, iconHidden: iconHidden, openMode: openMode, updateCheck: updateCheck, autoUpdate: autoUpdate, noticedUpdate: noticedUpdate }))
   }
 
   // The bar entry stays in shell.json either way; the widget just draws
@@ -82,6 +88,16 @@ Scope {
 
   function setOpenMode(mode) {
     openMode = mode === "search" ? "search" : "hints"
+    save()
+  }
+
+  function setAutoUpdate(value) {
+    autoUpdate = value === true
+    save()
+  }
+
+  function setNoticedUpdate(commit) {
+    noticedUpdate = String(commit || "")
     save()
   }
 

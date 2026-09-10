@@ -227,9 +227,10 @@ function applyScript(binds, target, command) {
 function releaseScript(binds) { return applyScript(binds, "", "") }
 
 // Settings file: { "hotkey": "SUPER + B", "enabled": true, "noticed": "...",
-//                  "iconHidden": false, "openMode": "hints" | "search" }
+//                  "iconHidden": false, "openMode": "hints" | "search",
+//                  "updateCheck": true, "autoUpdate": false, "noticedUpdate": "<commit>" }
 function parseSettings(text) {
-  var out = { hotkey: DEFAULT_HOTKEY, enabled: true, noticed: "", iconHidden: false, openMode: "hints" }
+  var out = { hotkey: DEFAULT_HOTKEY, enabled: true, noticed: "", iconHidden: false, openMode: "hints", updateCheck: true, autoUpdate: false, noticedUpdate: "" }
   var raw = null
   try { raw = JSON.parse(String(text || "")) } catch (e) { raw = null }
   if (!raw || typeof raw !== "object") return out
@@ -241,6 +242,9 @@ function parseSettings(text) {
   if (typeof raw.noticed === "string") out.noticed = raw.noticed
   if (raw.iconHidden === true || raw.iconHidden === "true") out.iconHidden = true
   if (raw.openMode === "search") out.openMode = "search"
+  if (raw.updateCheck === false || raw.updateCheck === "false") out.updateCheck = false
+  if (raw.autoUpdate === true || raw.autoUpdate === "true") out.autoUpdate = true
+  if (typeof raw.noticedUpdate === "string") out.noticedUpdate = raw.noticedUpdate
   return out
 }
 
@@ -250,7 +254,10 @@ function serializeSettings(s) {
     enabled: s.enabled !== false,
     noticed: s.noticed || "",
     iconHidden: s.iconHidden === true,
-    openMode: s.openMode === "search" ? "search" : "hints"
+    openMode: s.openMode === "search" ? "search" : "hints",
+    updateCheck: s.updateCheck !== false,
+    autoUpdate: s.autoUpdate === true,
+    noticedUpdate: s.noticedUpdate || ""
   }, null, 2) + "\n"
 }
 

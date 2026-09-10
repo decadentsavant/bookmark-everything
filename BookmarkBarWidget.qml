@@ -17,8 +17,8 @@ BarWidget {
 
   function run(command) { if (root.bar) root.bar.run(command) }
 
-  Component.onCompleted: Local.HotkeyService.retain()
-  Component.onDestruction: Local.HotkeyService.release()
+  Component.onCompleted: { Local.HotkeyService.retain(); Local.UpdateService.retain() }
+  Component.onDestruction: { Local.HotkeyService.release(); Local.UpdateService.release() }
 
   BarIconButton {
     id: button
