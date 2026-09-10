@@ -292,7 +292,7 @@ Item {
   function hotkeyStatus() { return Local.HotkeyService.summary }
 
   // IPC: omarchy-shell shell call <id> version '' — confirms which code is loaded.
-  readonly property string codeVersion: "1.3.0"
+  readonly property string codeVersion: "1.3.1"
   function version() { return root.codeVersion }
 
   // IPC: omarchy-shell shell call <id> resolveApp <target> — shows which desktop
@@ -1660,12 +1660,13 @@ Item {
     var on = !Local.HotkeyService.autoUpdate
     Local.HotkeyService.setAutoUpdate(on)
     root.showNotice(on ? "New versions will install themselves" : "You will be told about new versions")
-    if (on && Local.UpdateService.available) Local.UpdateService.update()
+    if (on && Local.UpdateService.available) Local.UpdateService.update(false)
   }
 
+  // The launcher is keepLoaded, so only a shell restart runs the new code.
   function runUpdate() {
-    Local.UpdateService.update()
-    root.showNotice("Updating…")
+    Local.UpdateService.update(true)
+    root.showNotice("Updating… the shell restarts when it is done")
   }
 
   function toggleOpenMode() {
@@ -3286,7 +3287,7 @@ Item {
                   width: parent.width
                   label: "Update automatically"
                   description: Local.HotkeyService.autoUpdate
-                    ? "New versions install themselves within a few hours of release, through omarchy plugin update."
+                    ? "New versions install themselves within a few hours of release and load at your next login."
                     : "Off. You get a notification when a new version is out; update from here or with omarchy plugin update."
                   checked: Local.HotkeyService.autoUpdate
                   foreground: root.foreground

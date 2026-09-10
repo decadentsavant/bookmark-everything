@@ -178,9 +178,11 @@ when asked, so the plugin looks for itself: a minute after login and every
 six hours it compares the installed commit with this repository
 (`git ls-remote`, read-only, silent when offline). A new version means one
 notification, and Options shows *Update now*, which runs
-`omarchy plugin update` for you. Turn on **Update automatically** to have new
-versions install themselves instead. To stop the check entirely, add
-`"updateCheck": false` to the settings file.
+`omarchy plugin update` for you and then restarts the shell, because the
+launcher stays loaded between summons and only a restart runs new code. Turn
+on **Update automatically** to have new versions install themselves instead;
+they load at your next login (or `omarchy restart shell`). To stop the check
+entirely, add `"updateCheck": false` to the settings file.
 
 The first launch seeds a few starter bookmarks (home and Downloads folders,
 this project and Baton on GitHub, the author on X, one installed app), each
@@ -209,7 +211,7 @@ bkmke export [file]      write all bookmarks to a JSON file
 bkmke hotkey [combo|off] show the hotkey, set one ("SUPER + ALT + B"), or turn it off
 bkmke icon on|off        show or hide the bookmark icon in the bar
 bkmke mode hints|search  set the mode the launcher opens in
-bkmke update             update the plugin (shows the diff first)
+bkmke update             update the plugin (shows the diff first; then omarchy restart shell)
 bkmke options            open the options screen
 ```
 

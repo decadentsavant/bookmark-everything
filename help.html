@@ -104,7 +104,7 @@
 <li><b>Built-in hotkey off:</b> the screen shows the line to add to <code>bindings.lua</code> if you want to bind it yourself.</li>
 <li><b>Icon in the bar:</b> hide or show it. The hotkey keeps working either way.</li>
 <li><b>Open in Search mode:</b> start in Search instead of Hints.</li>
-<li><b>Updates:</b> the plugin checks this repository twice a day. A new version gives one notification and an <b>Update now</b> button here. <b>Update automatically</b> installs new versions by itself. <code>"updateCheck": false</code> in the settings file stops the check.</li>
+<li><b>Updates:</b> the plugin checks this repository twice a day. A new version gives one notification and an <b>Update now</b> button here, which updates and restarts the shell. <b>Update automatically</b> installs new versions by itself; they load at the next login. <code>"updateCheck": false</code> in the settings file stops the check.</li>
 </ul>
 
 <h2>Import and export</h2>
@@ -125,7 +125,7 @@ bkmke import | export    JSON in / out
 bkmke hotkey [combo|off] show, set, or turn off the hotkey
 bkmke icon on|off        show or hide the bar icon
 bkmke mode hints|search  set the mode the launcher opens in
-bkmke update             update the plugin (shows the diff first)
+bkmke update             update the plugin (shows the diff first; then omarchy restart shell)
 bkmke options            open Options</pre>
 <p>675 codes (<code>aa</code>–<code>zy</code>) are available; anything beyond that is still reachable by search.</p>
 </main>
