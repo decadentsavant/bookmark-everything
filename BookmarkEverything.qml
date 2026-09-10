@@ -292,7 +292,7 @@ Item {
   function hotkeyStatus() { return Local.HotkeyService.summary }
 
   // IPC: omarchy-shell shell call <id> version '' — confirms which code is loaded.
-  readonly property string codeVersion: "1.3.1"
+  readonly property string codeVersion: "1.3.2"
   function version() { return root.codeVersion }
 
   // IPC: omarchy-shell shell call <id> resolveApp <target> — shows which desktop
@@ -3253,6 +3253,19 @@ Item {
                   onClicked: root.toggleOpenMode()
                 }
 
+                Toggle {
+                  width: parent.width
+                  label: "Update automatically"
+                  description: Local.HotkeyService.autoUpdate
+                    ? "New versions install themselves within a few hours of release and load at your next login."
+                    : "Off. You get a notification when a new version is out; update from here or with omarchy plugin update."
+                  checked: Local.HotkeyService.autoUpdate
+                  foreground: root.foreground
+                  accent: root.selectedText
+                  fontFamily: root.fontFamily
+                  onClicked: root.toggleAutoUpdate()
+                }
+
                 // Version and updates.
                 Row {
                   width: parent.width
@@ -3281,19 +3294,6 @@ Item {
                     fontFamily: root.fontFamily
                     onClicked: root.runUpdate()
                   }
-                }
-
-                Toggle {
-                  width: parent.width
-                  label: "Update automatically"
-                  description: Local.HotkeyService.autoUpdate
-                    ? "New versions install themselves within a few hours of release and load at your next login."
-                    : "Off. You get a notification when a new version is out; update from here or with omarchy plugin update."
-                  checked: Local.HotkeyService.autoUpdate
-                  foreground: root.foreground
-                  accent: root.selectedText
-                  fontFamily: root.fontFamily
-                  onClicked: root.toggleAutoUpdate()
                 }
 
                 // Footer: legend + button.

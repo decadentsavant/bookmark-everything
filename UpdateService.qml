@@ -50,13 +50,14 @@ Scope {
     if (retained === 0) { firstCheck.stop(); poll.stop() }
   }
 
-  // Throttled unless forced, so opening Options is cheap. Settings load
-  // asynchronously, and "updateCheck": false in the file must win, so
-  // nothing runs before they have.
+  // Opening Options checks again unless one just ran, so a release made
+  // after the last poll shows up right away. Settings load asynchronously,
+  // and "updateCheck": false in the file must win, so nothing runs before
+  // they have.
   function check(force) {
     if (checking || updating || retained <= 0) return
     if (!Local.HotkeyService.settingsLoaded || !Local.HotkeyService.updateCheck) return
-    if (!force && lastCheck && Date.now() - lastCheck < 10 * 60 * 1000) return
+    if (!force && lastCheck && Date.now() - lastCheck < 30 * 1000) return
     checking = true
     checkProc.running = true
   }
