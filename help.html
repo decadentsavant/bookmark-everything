@@ -103,6 +103,7 @@
 <li><b>Hotkey:</b> type a combination such as <code>SUPER + ALT + B</code> and press <kbd>Enter</kbd>. A key already in use is refused and named. To use it anyway, free it first in <code>~/.config/hypr/bindings.lua</code> (<code>hl.unbind("SUPER + B")</code>).</li>
 <li><b>Built-in hotkey off:</b> the screen shows the line to add to <code>bindings.lua</code> if you want to bind it yourself.</li>
 <li><b>Icon in the bar:</b> hide or show it. The hotkey keeps working either way.</li>
+<li><b>Open in Search mode:</b> start in Search instead of Hints.</li>
 </ul>
 
 <h2>Import and export</h2>
@@ -110,9 +111,8 @@
 
 <h2>Files</h2>
 <pre>~/.config/omarchy/bookmark-everything.json           bookmarks (plain JSON, edit freely; reloads on save)
-~/.config/omarchy/bookmark-everything.settings.json  hotkey choice, created when you change it</pre>
+~/.config/omarchy/bookmark-everything.settings.json  options (hotkey, icon, open mode), created when you change one</pre>
 <pre>{ "hint": "aa", "type": "url", "name": "Arch Wiki", "target": "https://wiki.archlinux.org", "tags": ["linux"], "notes": "" }</pre>
-<p>To open in Search mode by default, add <code>"openMode": "search"</code> to the plugin's entry under <code>plugins</code> in <code>~/.config/omarchy/shell.json</code>.</p>
 
 <h2>Command line</h2>
 <pre>bkmke                    open or close
@@ -123,6 +123,7 @@ bkmke apps               add apps in bulk
 bkmke import | export    JSON in / out
 bkmke hotkey [combo|off] show, set, or turn off the hotkey
 bkmke icon on|off        show or hide the bar icon
+bkmke mode hints|search  set the mode the launcher opens in
 bkmke options            open Options</pre>
 <p>675 codes (<code>aa</code>–<code>zy</code>) are available; anything beyond that is still reachable by search.</p>
 </main>

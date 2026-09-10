@@ -11,7 +11,9 @@ import "HotkeyModel.js" as HK
 // Nothing under ~/.config/hypr is written. The bind lives in the running
 // compositor (`hyprctl eval`), comes back after `hyprctl reload`, and is
 // removed when the plugin is disabled or removed. The preferred key and the
-// on/off switch live in a small plugin-owned settings file.
+// on/off switch live in a small plugin-owned settings file, which also holds
+// the other plugin options (bar icon shown or hidden, default open mode) so
+// the overlay and the bar widget read one source.
 Scope {
   id: service
 
@@ -24,6 +26,8 @@ Scope {
   property string hotkey: HK.DEFAULT_HOTKEY   // the key the user wants
   property bool enabled: true
   property string noticed: ""                 // last fallback we notified about
+  property bool iconHidden: false             // bar widget collapsed to nothing
+  property string openMode: "hints"           // mode the launcher opens in: hints | search
   property string active: ""                  // the key actually registered right now
   property string preferredOwner: ""          // what holds `hotkey` when we fell back
   property var binds: []                      // last parse of `hyprctl binds`
@@ -59,12 +63,26 @@ Scope {
     hotkey = s.hotkey
     enabled = s.enabled
     noticed = s.noticed
+    iconHidden = s.iconHidden
+    openMode = s.openMode
     settingsLoaded = true
     scan()
   }
 
   function save() {
-    settingsFile.setText(HK.serializeSettings({ hotkey: hotkey, enabled: enabled, noticed: noticed }))
+    settingsFile.setText(HK.serializeSettings({ hotkey: hotkey, enabled: enabled, noticed: noticed, iconHidden: iconHidden, openMode: openMode }))
+  }
+
+  // The bar entry stays in shell.json either way; the widget just draws
+  // nothing, so the plugin stays loaded and the hotkey keeps working.
+  function setIconHidden(value) {
+    iconHidden = value === true
+    save()
+  }
+
+  function setOpenMode(mode) {
+    openMode = mode === "search" ? "search" : "hints"
+    save()
   }
 
   // Re-reads `hyprctl binds` and reconciles. Safe to call any time.

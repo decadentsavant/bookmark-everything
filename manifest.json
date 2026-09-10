@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "io.github.decadentsavant.bookmark-everything",
   "name": "Bookmark Everything",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "author": "decadentsavant",
   "license": "MIT",
   "description": "Keyboard-first launcher for bookmarked URLs, files, folders, and applications",

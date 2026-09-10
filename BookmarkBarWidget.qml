@@ -9,6 +9,9 @@ import "." as Local
 BarWidget {
   id: root
   moduleName: "io.github.decadentsavant.bookmark-everything"
+  // Hidden from Options: the bar gives an invisible widget no width, so the
+  // entry can stay in the layout and the plugin stays loaded.
+  visible: !Local.HotkeyService.iconHidden
   implicitWidth: button.implicitWidth
   implicitHeight: button.implicitHeight
 

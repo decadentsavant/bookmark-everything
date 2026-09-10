@@ -102,10 +102,13 @@ assert.equal(H.releaseScript(shared), '')
 assert.equal(H.luaBind('X', 'say "hi" \\ there'), 'o.bind("X", "Bookmark Everything", "say \\"hi\\" \\\\ there")')
 
 // settings
-assert.deepEqual(H.parseSettings(''), { hotkey: 'SUPER + B', enabled: true, noticed: '' })
-assert.deepEqual(H.parseSettings('{"hotkey":"super+alt+b","enabled":false,"noticed":"x"}'), { hotkey: 'SUPER + ALT + B', enabled: false, noticed: 'x' })
+assert.deepEqual(H.parseSettings(''), { hotkey: 'SUPER + B', enabled: true, noticed: '', iconHidden: false, openMode: 'hints' })
+assert.deepEqual(H.parseSettings('{"hotkey":"super+alt+b","enabled":false,"noticed":"x","iconHidden":true,"openMode":"search"}'), { hotkey: 'SUPER + ALT + B', enabled: false, noticed: 'x', iconHidden: true, openMode: 'search' })
 assert.equal(H.parseSettings('{"hotkey":"nonsense"}').hotkey, 'SUPER + B')
+assert.equal(H.parseSettings('{"openMode":"bogus","iconHidden":"nope"}').openMode, 'hints')
+assert.equal(H.parseSettings('{"openMode":"bogus","iconHidden":"nope"}').iconHidden, false)
 assert.equal(H.parseSettings(H.serializeSettings({ hotkey: 'SUPER + ALT + B', enabled: true })).hotkey, 'SUPER + ALT + B')
+assert.deepEqual(H.parseSettings(H.serializeSettings({ hotkey: 'SUPER + B', iconHidden: true, openMode: 'search' })), { hotkey: 'SUPER + B', enabled: true, noticed: '', iconHidden: true, openMode: 'search' })
 
 // summary
 assert.equal(H.summary('SUPER + B', 'SUPER + B', '', true), 'Super+B')

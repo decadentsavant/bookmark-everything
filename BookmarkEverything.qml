@@ -27,17 +27,6 @@ Item {
   readonly property string helpPath: root.pluginDir + "/help.html"
   property string storePath: root.home + "/.config/omarchy/bookmark-everything.json"
 
-  // Inline settings on this plugin's entry in ~/.config/omarchy/shell.json:
-  //   { "id": "io.github.decadentsavant.bookmark-everything", "openMode": "hints" | "search" }
-  readonly property var pluginSettings: {
-    var cfg = root.shell ? root.shell.shellConfig : null
-    var list = cfg && Array.isArray(cfg.plugins) ? cfg.plugins : []
-    for (var i = 0; i < list.length; i++)
-      if (list[i] && list[i].id === root.pluginId) return list[i]
-    return ({})
-  }
-  readonly property string configuredOpenMode: root.pluginSettings.openMode === "search" ? "search" : "hints"
-
   // The hotkey itself is registered by HotkeyService, shared with the bar
   // widget. Retaining it here keeps the bind alive for as long as the overlay
   // is loaded, and releasing it on unload removes the bind.
@@ -118,18 +107,7 @@ Item {
   }
   // The line to paste into bindings.lua when the built-in hotkey is off.
   readonly property string bindingSnippet: HK.luaBindUser(Local.HotkeyService.hotkey || HK.DEFAULT_HOTKEY, root.pluginId)
-  // Whether the bar icon is in the bar layout right now.
-  readonly property bool iconInBar: {
-    var cfg = root.shell ? root.shell.shellConfig : null
-    var layout = cfg && cfg.bar && cfg.bar.layout ? cfg.bar.layout : null
-    if (!layout) return false
-    var sections = ["left", "center", "right"]
-    for (var s = 0; s < sections.length; s++) {
-      var arr = layout[sections[s]] || []
-      for (var i = 0; i < arr.length; i++) if (arr[i] && arr[i].id === root.pluginId) return true
-    }
-    return false
-  }
+  readonly property bool iconInBar: !Local.HotkeyService.iconHidden
 
   // Shares the [menu] surface tokens so themes that style the Omarchy menu
   // style this launcher too.
@@ -172,7 +150,7 @@ Item {
   function open(payloadJson) {
     var payload = ({})
     try { payload = JSON.parse(payloadJson || "{}") } catch (e) { payload = ({}) }
-    var requested = payload.mode === "search" || payload.mode === "hints" ? payload.mode : root.configuredOpenMode
+    var requested = payload.mode === "search" || payload.mode === "hints" ? payload.mode : Local.HotkeyService.openMode
     root.openMode = requested
     root.mode = requested
     root.view = "list"
@@ -272,32 +250,16 @@ Item {
   }
 
   // IPC: omarchy-shell shell call <id> setIconInBar false
-  // Adds or removes the bar icon. The plugin stays enabled either way through
-  // an entry in shell.json's `plugins` list, so the hotkey keeps working.
+  // Shows or hides the bar icon. The bar entry itself is never touched, so
+  // the plugin stays loaded and the hotkey keeps working.
   function setIconInBar(value) {
-    var show = String(value) !== "false"
-    if (!root.shell || typeof root.shell.persistShellConfig !== "function") return "error: shell config unavailable"
-    var cfg = JSON.parse(JSON.stringify(root.shell.shellConfig || {}))
-    if (!cfg.bar || typeof cfg.bar !== "object") cfg.bar = {}
-    if (!cfg.bar.layout || typeof cfg.bar.layout !== "object") cfg.bar.layout = { left: [], center: [], right: [] }
-    if (!Array.isArray(cfg.plugins)) cfg.plugins = []
-    var sections = ["left", "center", "right"]
-    for (var s = 0; s < sections.length; s++) {
-      var arr = Array.isArray(cfg.bar.layout[sections[s]]) ? cfg.bar.layout[sections[s]] : []
-      cfg.bar.layout[sections[s]] = arr.filter(function(e) { return !(e && e.id === root.pluginId) })
-    }
-    var pluginIndex = -1
-    for (var i = 0; i < cfg.plugins.length; i++) if (cfg.plugins[i] && cfg.plugins[i].id === root.pluginId) pluginIndex = i
-    if (show) {
-      var right = cfg.bar.layout.right
-      right.splice(Math.min(1, right.length), 0, { id: root.pluginId })
-      // A bare plugins entry only existed to keep the overlay loaded while the
-      // icon was hidden; drop it so `omarchy plugin disable` works in one go.
-      if (pluginIndex !== -1 && Object.keys(cfg.plugins[pluginIndex]).length === 1) cfg.plugins.splice(pluginIndex, 1)
-    } else if (pluginIndex === -1) {
-      cfg.plugins.push({ id: root.pluginId })
-    }
-    root.shell.persistShellConfig(cfg)
+    Local.HotkeyService.setIconHidden(String(value) === "false")
+    return "ok"
+  }
+
+  // IPC: omarchy-shell shell call <id> setOpenMode search
+  function setOpenMode(mode) {
+    Local.HotkeyService.setOpenMode(String(mode))
     return "ok"
   }
 
@@ -317,7 +279,7 @@ Item {
   function hotkeyStatus() { return Local.HotkeyService.summary }
 
   // IPC: omarchy-shell shell call <id> version '' — confirms which code is loaded.
-  readonly property string codeVersion: "1.1.0"
+  readonly property string codeVersion: "1.2.0"
   function version() { return root.codeVersion }
 
   // IPC: omarchy-shell shell call <id> resolveApp <target> — shows which desktop
@@ -1676,9 +1638,14 @@ Item {
 
   function toggleIconInBar() {
     var show = !root.iconInBar
-    var result = root.setIconInBar(show)
-    if (result !== "ok") { root.showNotice(result); return }
-    root.showNotice(show ? "Icon added to the bar" : "Icon removed from the bar")
+    Local.HotkeyService.setIconHidden(!show)
+    root.showNotice(show ? "Icon shown in the bar" : "Icon hidden from the bar")
+  }
+
+  function toggleOpenMode() {
+    var search = Local.HotkeyService.openMode !== "search"
+    Local.HotkeyService.setOpenMode(search ? "search" : "hints")
+    root.showNotice(search ? "Opens in Search mode" : "Opens in Hints mode")
   }
 
   function handleOptionsKey(event) {
@@ -3244,6 +3211,19 @@ Item {
                   accent: root.selectedText
                   fontFamily: root.fontFamily
                   onClicked: root.toggleIconInBar()
+                }
+
+                Toggle {
+                  width: parent.width
+                  label: "Open in Search mode"
+                  description: Local.HotkeyService.openMode === "search"
+                    ? "The launcher opens ready to type a search. Esc closes it."
+                    : "The launcher opens with two-letter hint codes. / or Tab switches to Search."
+                  checked: Local.HotkeyService.openMode === "search"
+                  foreground: root.foreground
+                  accent: root.selectedText
+                  fontFamily: root.fontFamily
+                  onClicked: root.toggleOpenMode()
                 }
 
                 // Footer: legend + button.

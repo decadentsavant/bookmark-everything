@@ -10,6 +10,7 @@
 #   bkmke export [file.json]    write all bookmarks to a JSON file
 #   bkmke hotkey [combo|off]    show the hotkey; set one ("SUPER + ALT + B"); or turn it off
 #   bkmke icon on|off           show or hide the bookmark icon in the bar
+#   bkmke mode hints|search     set the mode the launcher opens in
 #   bkmke options               open the options screen
 #   bkmke path                  print the storage file path
 set -euo pipefail
@@ -49,8 +50,13 @@ case "${1:-toggle}" in
       off|hide) call setIconInBar false ;;
       *) echo "usage: bkmke icon on|off" >&2; exit 2 ;;
     esac ;;
+  mode)
+    case "${2:-}" in
+      hints|search) call setOpenMode "$2" ;;
+      *) echo "usage: bkmke mode hints|search" >&2; exit 2 ;;
+    esac ;;
   options|settings) call openHotkeySettings "" ;;
   path) echo "$STORE" ;;
-  -h|--help|help) sed -n '2,16p' "$0" ;;
+  -h|--help|help) sed -n '2,15p' "$0" ;;
   *) echo "unknown command: $1" >&2; exit 2 ;;
 esac

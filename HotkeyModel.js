@@ -226,9 +226,10 @@ function applyScript(binds, target, command) {
 
 function releaseScript(binds) { return applyScript(binds, "", "") }
 
-// Settings file: { "hotkey": "SUPER + B", "enabled": true, "noticed": "..." }
+// Settings file: { "hotkey": "SUPER + B", "enabled": true, "noticed": "...",
+//                  "iconHidden": false, "openMode": "hints" | "search" }
 function parseSettings(text) {
-  var out = { hotkey: DEFAULT_HOTKEY, enabled: true, noticed: "" }
+  var out = { hotkey: DEFAULT_HOTKEY, enabled: true, noticed: "", iconHidden: false, openMode: "hints" }
   var raw = null
   try { raw = JSON.parse(String(text || "")) } catch (e) { raw = null }
   if (!raw || typeof raw !== "object") return out
@@ -238,11 +239,19 @@ function parseSettings(text) {
   }
   if (raw.enabled === false || raw.enabled === "false") out.enabled = false
   if (typeof raw.noticed === "string") out.noticed = raw.noticed
+  if (raw.iconHidden === true || raw.iconHidden === "true") out.iconHidden = true
+  if (raw.openMode === "search") out.openMode = "search"
   return out
 }
 
 function serializeSettings(s) {
-  return JSON.stringify({ hotkey: s.hotkey, enabled: s.enabled !== false, noticed: s.noticed || "" }, null, 2) + "\n"
+  return JSON.stringify({
+    hotkey: s.hotkey,
+    enabled: s.enabled !== false,
+    noticed: s.noticed || "",
+    iconHidden: s.iconHidden === true,
+    openMode: s.openMode === "search" ? "search" : "hints"
+  }, null, 2) + "\n"
 }
 
 // One line for tooltips: what key opens the launcher right now, and why it is

@@ -137,8 +137,9 @@ the same call Omarchy's own Lua config uses. It is put back after
 - **Take over a key in use:** free it first in `bindings.lua`, e.g.
   `hl.unbind("SUPER + B")`, then choose it.
 
-Your choice lives in `~/.config/omarchy/bookmark-everything.settings.json`
-(`hotkey`, `enabled`), created the first time you change something.
+Your choices live in `~/.config/omarchy/bookmark-everything.settings.json`
+(`hotkey`, `enabled`, `iconHidden`, `openMode`), created the first time you
+change something in Options.
 
 </details>
 
@@ -165,14 +166,8 @@ desktop entry id (`org.gnome.Nautilus`). Paths may start with `~/`. Import
 uses the same format: matching ids are replaced, new ones appended, colliding
 hints reassigned, and a timestamped backup written first.
 
-To open in Search mode by default, set `openMode` on the plugin's entry in
-`~/.config/omarchy/shell.json`:
-
-```json
-"plugins": [
-  { "id": "io.github.decadentsavant.bookmark-everything", "openMode": "search" }
-]
-```
+To open in Search mode by default, turn on **Open in Search mode** in Options
+(or run `bkmke mode search`).
 
 The first launch seeds a few starter bookmarks (home and Downloads folders,
 this project and Baton on GitHub, the author on X, one installed app), each
@@ -200,6 +195,7 @@ bkmke import <file>      merge a JSON export
 bkmke export [file]      write all bookmarks to a JSON file
 bkmke hotkey [combo|off] show the hotkey, set one ("SUPER + ALT + B"), or turn it off
 bkmke icon on|off        show or hide the bookmark icon in the bar
+bkmke mode hints|search  set the mode the launcher opens in
 bkmke options            open the options screen
 ```
 
